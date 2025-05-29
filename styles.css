@@ -1,0 +1,30 @@
+html, head, body
+{
+    margin: 0;
+    padding: 25px;
+    background-color: #242424;
+}
+
+#demo-canvas
+{
+    width: 800px;
+    height: 800px;
+    background-color: #f19292;
+    image-rendering: crisp-edges;
+}
+
+#error-box
+{
+    color: rgb(238, 58, 58);
+    font-weight: 500;
+    font-size: 18pt;
+    border: 1px solid rgb(255, 255, 255);
+    padding: 25px;
+    margin-top: 20px;
+}
+
+.error-box-title
+{
+    color: #ffffff;
+    border-bottom: 1px solid rgb(255, 255, 255);
+}

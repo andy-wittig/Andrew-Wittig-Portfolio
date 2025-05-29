@@ -9,7 +9,7 @@ html, head, body
 {
     width: 800px;
     height: 800px;
-    background-color: #f19292;
+    /*background-color: #f19292;*/
     image-rendering: crisp-edges;
 }
 

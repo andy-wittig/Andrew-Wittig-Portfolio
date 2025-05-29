@@ -1,7 +1,7 @@
 html, head, body
 {
     margin: 0;
-    padding: 25px;
+    padding: 10px;
     background-color: #242424;
 }
 
@@ -15,12 +15,18 @@ html, head, body
 
 #error-box
 {
-    color: rgb(238, 58, 58);
+    color: #ff0033;
     font-weight: 500;
     font-size: 18pt;
     border: 1px solid rgb(255, 255, 255);
-    padding: 25px;
-    margin-top: 20px;
+    padding: 10px;
+    margin: auto;
+}
+
+.center
+{
+    display: block;
+    margin: auto;
 }
 
 .error-box-title

@@ -19,7 +19,7 @@ export default gl;
 
 //Objects
 const mShader = new Shader("vertexShaderSource.glsl", "fragmentShaderSource.glsl");
-const mModel = new Object;
+const mModel = new Object("cube.obj");
 
 function showError(errorText)
 {
@@ -35,6 +35,7 @@ let deltaTime = 0;
 async function runEngine()
 {
     await mShader.Initialize();
+    await mModel.Initialize();
 
     //Attibute and Uniform Positions
     const projectionMatrixLocation = mShader.getUniformLocation("projectionMatrix");

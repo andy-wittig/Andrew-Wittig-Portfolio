@@ -1,108 +1,54 @@
- import gl from "./engine.js";
+ import gl from "./engine.js"
+ import objectLoader from "./objectLoader.js"
 
-     function loadTexture(path)
-    {
-        const texture = gl.createTexture();
+function loadTexture(path)
+{
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    const image = new Image();
+    image.onload = () => {
         gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    
+        if (isPowerOf2(image.width) && isPowerOf2(image.height)) 
+        {
+            gl.generateMipmap(gl.TEXTURE_2D);
+        } 
+        else 
+        {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
+    };
+    image.src = path;
 
-        const image = new Image();
-        image.onload = () => {
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        
-            if (isPowerOf2(image.width) && isPowerOf2(image.height)) 
-            {
-                gl.generateMipmap(gl.TEXTURE_2D);
-            } 
-            else 
-            {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            }
-        };
-        image.src = path;
+    return texture;
+}
 
-        return texture;
-    }
-
-    function isPowerOf2(value)
-    {
-        return (value & (value - 1 )) === 0;
-    }
+function isPowerOf2(value)
+{
+    return (value & (value - 1 )) === 0;
+}
 
 export default class Object
 {
-    constructor()
+    constructor(objPath)
+    {
+        this.objPath = objPath;
+    }
+
+    async Initialize()
     {
         this.modelMatrix = mat4.create();
 
-        this.vertices = [
-            //Front face
-            -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
-            //Back face
-            -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0,
-            //Top face
-            -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
-            //Bottom face
-            -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0,
-            //Right face
-            1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
-            //Left face
-            -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0
-        ];
-        this.indices = [
-            0,
-            1,
-            2,
-            0,
-            2,
-            3, //front
-            4,
-            5,
-            6,
-            4,
-            6,
-            7, //back
-            8,
-            9,
-            10,
-            8,
-            10,
-            11, //top
-            12,
-            13,
-            14,
-            12,
-            14,
-            15, //bottom
-            16,
-            17,
-            18,
-            16,
-            18,
-            19, //right
-            20,
-            21,
-            22,
-            20,
-            22,
-            23 //left
-        ];
-        this.textureCoords = [
-            //Front
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-            //Back
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-            // Top
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-            //Bottom
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-            //Right
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-            //Left
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0
-        ];
+        const mLoader = new objectLoader;
+        await mLoader.loadObject(this.objPath);
+
+        this.vertices = mLoader.getVertices();
+        this.textureCoords = mLoader.getUV();
+        this.indices = mLoader.getIndices();
 
         this.objectVAO = gl.createVertexArray();
         this.vertexBuffer = gl.createBuffer();

@@ -19,7 +19,7 @@ export default gl;
 
 //Objects
 const mShader = new Shader("vertexShaderSource.glsl", "fragmentShaderSource.glsl");
-const mModel = new Object("cube.obj");
+const mModel = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png");
 
 function showError(errorText)
 {
@@ -64,7 +64,7 @@ async function runEngine()
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
     const viewMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, [0, 4, 6], [0, 1, 0], [0, 1, 0]);
+    mat4.lookAt(viewMatrix, [4, 9, 4], [0, 3, 0], [0, 1, 0]);
 
     //Setup GPU program
     mShader.enableShader();
@@ -82,7 +82,7 @@ async function runEngine()
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        mModel.rotate(deltaTime, [0, 1, 0]);
+        mModel.rotate(deltaTime * 0.4, [0, 1, 0]);
 
         gl.uniformMatrix4fv(modelMatrixLocation, false, mModel.getModelMatrix());
         mModel.render(mShader);

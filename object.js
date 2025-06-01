@@ -10,33 +10,24 @@ function loadTexture(path)
     image.onload = () => {
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    
-        if (isPowerOf2(image.width) && isPowerOf2(image.height)) 
-        {
-            gl.generateMipmap(gl.TEXTURE_2D);
-        } 
-        else 
-        {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        }
+        gl.generateMipmap(gl.TEXTURE_2D);
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     };
     image.src = path;
 
     return texture;
 }
 
-function isPowerOf2(value)
-{
-    return (value & (value - 1 )) === 0;
-}
-
 export default class Object
 {
-    constructor(objPath)
+    constructor(objPath, diffusePath)
     {
         this.objPath = objPath;
+        this.diffusePath = diffusePath;
     }
 
     async Initialize()
@@ -71,12 +62,12 @@ export default class Object
 
         // Index Buffer
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
 
         gl.bindVertexArray(null);
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
-        this.texture = loadTexture("texture.png");
+        this.texture = loadTexture(this.diffusePath);
     }
 
     render(shader)
@@ -87,7 +78,8 @@ export default class Object
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.uniform1i(shader.getUniformLocation("textureDiffuse"), 0);
 
-        gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
+        const ext = gl.getExtension('OES_element_index_uint');
+        gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
 
         gl.bindVertexArray(null);
     }

@@ -18,8 +18,8 @@ if (!gl)
 export default gl;
 
 //Objects
-const mShader = new Shader("vertexShaderSource.glsl", "fragmentShaderSource.glsl");
-const mModel = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png");
+const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/fragmentLightingShaderSource.glsl");
+const mModel = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
 
 function showError(errorText)
 {
@@ -50,7 +50,7 @@ async function runEngine()
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
+    gl.depthFunc(gl.LESS);
 
     //Rasterizer
     gl.viewport(0, 0, canvas.width , canvas.height);
@@ -64,13 +64,19 @@ async function runEngine()
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
     const viewMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, [4, 9, 4], [0, 3, 0], [0, 1, 0]);
+    const cameraPos = [[0, 6, 8], [0, 2, 0], [0, 1, 0]];
+    mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
 
     //Setup GPU program
     mShader.enableShader();
+    gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-1, 0, 0]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.05, .05, .05]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.8, .8, .8]);
+
     gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
 	gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
-	
 
     let then = 0;
 
@@ -82,10 +88,15 @@ async function runEngine()
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        mModel.rotate(deltaTime * 0.4, [0, 1, 0]);
-
+        //Render Objects
+        mShader.enableShader();
+        gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
+        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 40.0);
         gl.uniformMatrix4fv(modelMatrixLocation, false, mModel.getModelMatrix());
         mModel.render(mShader);
+
+        //Update Position
+        mModel.rotate(deltaTime * 0.4, [0, 1, 0]);
 
         requestAnimationFrame(update);
     }

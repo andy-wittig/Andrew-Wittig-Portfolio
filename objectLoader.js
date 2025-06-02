@@ -10,13 +10,14 @@ export default class objectLoader
         //console.log(this.result[0] + "\n");
         //console.log(this.result[1] + "\n");
         //console.log(this.result[2] + "\n");
-        console.log(this.result[3] + "\n");
+        //console.log(this.result[3] + "\n");
     }
 
     getVertices() { return this.result[0]; }
     getUV() { return this.result[1]; }
     getNormals() { return this.result[2]; }
     getIndices() { return this.result[3]; }
+    getTangents() { return this.result[4]; }
 
     async parseObj(data)
     {
@@ -24,7 +25,7 @@ export default class objectLoader
         
         var aCache = {} //reusable vertices
         var cVert = [], cUV = [], cNorm = []; //Raw data
-        var fVert = [], fUV = [], fNorm = [], fIndex = []; //Final rendering data
+        var fVert = [], fUV = [], fNorm = [], fIndex = [], tangents = []; //Final rendering data
 
         var faceParts;
         var fIndexCnt = 0;
@@ -68,13 +69,13 @@ export default class objectLoader
                         else
                         {
                             let ind;
-
+                            //Vertex
                             ind = (parseInt(vertexData[0]) - 1) * 3; //0-based indexing instead op 1-based
                             fVert.push(cVert[ind], cVert[ind + 1], cVert[ind + 2]);
-
+                            //UV
                             ind = (parseInt(vertexData[1]) - 1) * 2;
                             fUV.push(cUV[ind], cUV[ind + 1]); //flip Y UV
-
+                            //Normal
                             ind = (parseInt(vertexData[2]) - 1) * 3;
                             fNorm.push(cNorm[ind], cNorm[ind + 1], cNorm[ind + 2]);
                             
@@ -86,6 +87,39 @@ export default class objectLoader
                     break;
             }
         }
-        return [fVert, fUV, fNorm, fIndex];
+        //Tangent Generation
+        tangents = this.generateTangents(fVert, fUV, fIndex);
+
+        return [fVert, fUV, fNorm, fIndex, tangents];
+    }
+
+    generateTangents(vPositions, vTextures, vIndices)
+    {
+        const calcTangents = [];
+        for (let i = 0; i < vIndices.length; i += 3)
+        {
+            const v0 = [vPositions[vIndices[i] * 3], vPositions[vIndices[i] * 3 + 1], vPositions[vIndices[i] * 3 + 2]];
+            const v1 = [vPositions[vIndices[i + 1] * 3], vPositions[vIndices[i + 1] * 3 + 1], vPositions[vIndices[i + 1] * 3 + 2]];
+            const v2 = [vPositions[vIndices[i + 2] * 3], vPositions[vIndices[i + 2] * 3 + 1], vPositions[vIndices[i + 2] * 3 + 2]];
+
+            const edge1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+            const edge2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+
+            const v0Tex = [vTextures[vIndices[i] * 2], vTextures[vIndices[i] * 2 + 1]];
+            const v1Tex = [vTextures[vIndices[i + 1] * 2], vTextures[vIndices[i + 1] * 2 + 1]];
+            const v2Tex = [vTextures[vIndices[i + 2] * 2], vTextures[vIndices[i + 2] * 2 + 1]];
+
+            const deltaU1 = v1Tex[0] - v0Tex[0];
+            const deltaV1 = v1Tex[1] - v0Tex[1];
+            const deltaU2 = v2Tex[0] - v0Tex[0];
+            const deltaV2 = v2Tex[1] - v0Tex[1];
+
+            const f = 1.0 / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+
+            calcTangents.push(f * (-deltaU2 * edge1[0] + deltaU1 * edge2[0]));
+            calcTangents.push(f * (-deltaU2 * edge1[1] + deltaU1 * edge2[1]));
+            calcTangents.push(f * (-deltaU2 * edge1[2] + deltaU1 * edge2[2]));
+        }
+        return calcTangents;
     }
 }

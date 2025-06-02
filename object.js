@@ -24,10 +24,13 @@ function loadTexture(path)
 
 export default class Object
 {
-    constructor(objPath, diffusePath)
+    constructor(objPath, diffusePath, specularPath, normalPath, emissionPath)
     {
         this.objPath = objPath;
-        this.diffusePath = diffusePath;
+        this.diffusePath = diffusePath || null;
+        this.specularPath = specularPath || null;
+        this.normalPath = normalPath || null;
+        this.emissionPath = emissionPath || null;
     }
 
     async Initialize()
@@ -38,13 +41,18 @@ export default class Object
         await mLoader.loadObject(this.objPath);
 
         this.vertices = mLoader.getVertices();
+        this.normals = mLoader.getNormals();
         this.textureCoords = mLoader.getUV();
+        this.tangents = mLoader.getTangents();
         this.indices = mLoader.getIndices();
 
         this.objectVAO = gl.createVertexArray();
+
         this.vertexBuffer = gl.createBuffer();
-        this.indexBuffer = gl.createBuffer();
+        this.normalBuffer = gl.createBuffer();
         this.textureBuffer = gl.createBuffer();
+        this.tangentBuffer = gl.createBuffer();
+        this.indexBuffer = gl.createBuffer();
 
         gl.bindVertexArray(this.objectVAO);
 
@@ -54,31 +62,80 @@ export default class Object
         gl.enableVertexAttribArray(0);
         gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
-        // Texture Coordinate Buffer
+        //Normal Buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+
+        //Texture Coordinate Buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoords), gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
 
-        // Index Buffer
+        //Tangent Buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.tangentBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.tangents), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(3);
+        gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 0, 0);
+
+        //Index Buffer
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
 
         gl.bindVertexArray(null);
 
+        //Load Textures
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
-        this.texture = loadTexture(this.diffusePath);
+
+        if (this.diffusePath !== null)
+        {
+            this.diffuseTexture = loadTexture(this.diffusePath);
+        }
+        if (this.specularPath !== null)
+        {
+            this.specularTexture = loadTexture(this.specularPath);
+        }
+        if (this.normalPath !== null)
+        {
+            this.normalTexture = loadTexture(this.normalPath);
+        }
+        if (this.emissionPath !== null)
+        {
+            this.emissionTexture = loadTexture(this.emissionPath);
+        }
     }
 
     render(shader)
     {
         gl.bindVertexArray(this.objectVAO);
         
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.uniform1i(shader.getUniformLocation("textureDiffuse"), 0);
+        if (this.diffusePath !== null)
+        {
+            gl.uniform1i(shader.getUniformLocation("material.textureDiffuse"), 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.diffuseTexture);  
+        }
+        if (this.specularPath !== null)
+        {
+            gl.uniform1i(shader.getUniformLocation("material.textureSpecular"), 1);
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, this.specularTexture);  
+        }
+        if (this.normalPath !== null)
+        {
+            gl.uniform1i(shader.getUniformLocation("material.textureNormal"), 2);
+            gl.activeTexture(gl.TEXTURE2);
+            gl.bindTexture(gl.TEXTURE_2D, this.normalTexture);  
+        }
+        if (this.emissionPath !== null)
+        {
+            gl.uniform1i(shader.getUniformLocation("material.textureEmission"), 3);
+            gl.activeTexture(gl.TEXTURE3);
+            gl.bindTexture(gl.TEXTURE_2D, this.emissionTexture);  
+        }
 
-        const ext = gl.getExtension('OES_element_index_uint');
         gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
 
         gl.bindVertexArray(null);

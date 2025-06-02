@@ -6,16 +6,23 @@ import Object from "./object.js"
 const canvas = document.getElementById("demo-canvas");
 if (!canvas)
 {
-    showError("Cannot get canvas reference.");
+    console.log("Cannot get canvas reference.");
 }
 
 const gl = canvas.getContext("webgl2");
 if (!gl)
 {
-    showError("This browser doesn't support WebGL 2.");
+    console.log("This browser doesn't support WebGL 2.");
 }
-
 export default gl;
+
+function resizeCanvas()
+{
+    canvas.width = gl.canvas.clientWidth;
+    canvas.height = gl.canvas.clientHeight;
+    gl.viewport(0, 0, canvas.width , canvas.height);
+    setFrameBufferAttatchmentSize(canvas.width, canvas.height);
+}
 
 //Objects
 const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/fragmentLightingShaderSource.glsl");
@@ -83,15 +90,6 @@ function assignUniqueID()
     }
 }
 
-function showError(errorText)
-{
-    console.log(errorText);
-    const errorBoxDiv = document.getElementById("error-box");
-    const errorTextElem = document.createElement("p");
-    errorTextElem.innerText = errorText;
-    errorBoxDiv.appendChild(errorTextElem);
-}
-
 let deltaTime = 0;
 async function runEngine()
 {
@@ -104,8 +102,8 @@ async function runEngine()
     const viewMatrixLocation = mShader.getUniformLocation("viewMatrix");
 
     //Output Merger
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
 
     //WebGL Render Settings
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -114,31 +112,34 @@ async function runEngine()
     gl.enable(gl.CULL_FACE);
     gl.depthFunc(gl.LESS);
 
-    //Buffers
-    setFrameBufferAttatchmentSize(canvas.width, canvas.height);
-
     //Camera
     const fieldOfView = (60 * Math.PI) / 180;
-    const aspect = gl.canvas.width / gl.canvas.height;
     const zNear = 0.1;
     const zFar = 100.0;
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-    const viewMatrix = mat4.create();
-    const cameraPos = [[0, 6, 8], [0, 2, 0], [0, 1, 0]];
-    mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
+    var projectionMatrix = mat4.create();
+    var viewMatrix = mat4.create();
+
+    function updateCamera()
+    {
+        var aspect = canvas.width / canvas.height;
+        mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+        var cameraPos = [[0, 6, 8], [0, 2, 0], [0, 1, 0]];
+        mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
+
+        mShader.enableShader();
+        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
+        gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
+        gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
+    }
 
     //Setup GPU program
     mShader.enableShader();
-    gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-1, 0, 0]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.8, .8, .8]);
-
-    gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-	gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
 
     let then = 0;
     function update(now) 
@@ -148,10 +149,10 @@ async function runEngine()
         then = now;
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        
+
         //Render Picking Buffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
-        gl.viewport(0, 0, canvas.width , canvas.height);
+        //gl.viewport(0, 0, canvas.width , canvas.height); might cause visual bugs
         
         mPickingShader.enableShader();
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
@@ -171,6 +172,9 @@ async function runEngine()
         //Update Model Positions
         mModel.rotate(deltaTime * 0.2, [0, 1, 0]);
 
+        //Update Camera
+        updateCamera();
+
         requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
@@ -182,5 +186,5 @@ try
 }
 catch (e)
 {
-    showError(`Uncaught JavaScript exception: ${e}`);
+    console.log(`Uncaught JavaScript exception: ${e}`);
 }

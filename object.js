@@ -107,29 +107,29 @@ export default class Object
         }
     }
 
-    render(shader)
+    render(shader = null)
     {
         gl.bindVertexArray(this.objectVAO);
         
-        if (this.diffusePath !== null)
+        if (this.diffusePath !== null && shader !== null)
         {
             gl.uniform1i(shader.getUniformLocation("material.textureDiffuse"), 0);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.diffuseTexture);  
         }
-        if (this.specularPath !== null)
+        if (this.specularPath !== null && shader !== null)
         {
             gl.uniform1i(shader.getUniformLocation("material.textureSpecular"), 1);
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, this.specularTexture);  
         }
-        if (this.normalPath !== null)
+        if (this.normalPath !== null && shader !== null)
         {
             gl.uniform1i(shader.getUniformLocation("material.textureNormal"), 2);
             gl.activeTexture(gl.TEXTURE2);
             gl.bindTexture(gl.TEXTURE_2D, this.normalTexture);  
         }
-        if (this.emissionPath !== null)
+        if (this.emissionPath !== null && shader !== null)
         {
             gl.uniform1i(shader.getUniformLocation("material.textureEmission"), 3);
             gl.activeTexture(gl.TEXTURE3);

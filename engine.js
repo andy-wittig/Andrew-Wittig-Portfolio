@@ -72,7 +72,7 @@ function assignUniqueID()
 {
     while (true)
     {
-        const new_id = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), 255.0];
+        const new_id = [Math.floor(Math.random() * 255) + 1, Math.floor(Math.random() * 255) + 1, Math.floor(Math.random() * 255) + 1, 255.0];
 
         let isDuplicate = false;
 
@@ -100,10 +100,6 @@ async function runEngine()
     //Attibute and Uniform Positions
     const projectionMatrixLocation = mShader.getUniformLocation("projectionMatrix");
     const viewMatrixLocation = mShader.getUniformLocation("viewMatrix");
-
-    //Output Merger
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
 
     //WebGL Render Settings
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -134,6 +130,21 @@ async function runEngine()
         gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
     }
 
+    function pickObjects()
+    {
+        const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
+        const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
+        const data = new Uint8Array(4);
+
+        gl.readPixels(pixelX, pixelY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+
+        if (id > 0) 
+        {
+            console.log("Oject hovered over!");
+        }
+    }
+
     //Setup GPU program
     mShader.enableShader();
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-1, 0, 0]);
@@ -141,13 +152,20 @@ async function runEngine()
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.8, .8, .8]);
 
+    let mouseX = -1;
+    let mouseY = -1;
     let then = 0;
+    const mModelId = assignUniqueID();
+    
     function update(now) 
     {
         now *= 0.001; //convert to seconds
         deltaTime = now - then;
         then = now;
 
+        updateCamera();
+
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         //Render Picking Buffer
@@ -158,11 +176,16 @@ async function runEngine()
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
 	    gl.uniformMatrix4fv(mPickingShader.getUniformLocation("viewMatrix"), false, viewMatrix);
-        gl.uniform4fv(mPickingShader.getUniformLocation("id"), assignUniqueID());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModelId);
+
         mModel.render();
+
+        pickObjects();
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         //Render Objects
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         mShader.enableShader();
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
         gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
@@ -172,12 +195,18 @@ async function runEngine()
         //Update Model Positions
         mModel.rotate(deltaTime * 0.2, [0, 1, 0]);
 
-        //Update Camera
-        updateCamera();
-
         requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    gl.canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+     });
 }
 
 try

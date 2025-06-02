@@ -71,7 +71,7 @@ async function runEngine()
     mShader.enableShader();
     gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-1, 0, 0]);
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.05, .05, .05]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.8, .8, .8]);
 
@@ -96,7 +96,7 @@ async function runEngine()
         mModel.render(mShader);
 
         //Update Position
-        mModel.rotate(deltaTime * 0.4, [0, 1, 0]);
+        mModel.rotate(deltaTime * 0.2, [0, 1, 0]);
 
         requestAnimationFrame(update);
     }

@@ -150,6 +150,17 @@ async function runEngine()
         return id;
     }
 
+    function renderObjectPicking(shader, object, id)
+    {
+        var objectID = object.getID();
+        var encodedObjectID = objectID[0] * 255 + (objectID[1] * 255 << 8) + (objectID[2] * 255 << 16) + (objectID[3] * 255 << 24) >>> 0;
+        
+        if (id == encodedObjectID) { gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [objectID[0], objectID[1], objectID[2]]); }
+        gl.uniformMatrix4fv(shader.getUniformLocation("modelMatrix"), false, object.getModelMatrix());
+        object.render(shader);
+        gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
+    }
+
     let mouseX = -1;
     let mouseY = -1;
     let prevTime = 0;
@@ -162,11 +173,11 @@ async function runEngine()
 
         updateCamera();
 
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
         //Render Picking Buffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
+
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
         mPickingShader.enableShader();
 
@@ -185,7 +196,7 @@ async function runEngine()
         gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel3.getID()); 
         mModel3.render();
 
-        let pick_id = pickObjects();
+        let pickID = pickObjects();
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -203,16 +214,11 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
         gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
         gl.uniform1f(mShader.getUniformLocation("material.shininess"), 40.0);
-         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
+        gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
-        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
-        mModel.render(mShader);
-
-        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel2.getModelMatrix());
-        mModel2.render(mShader);
-
-        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel3.getModelMatrix());
-        mModel3.render(mShader);
+        renderObjectPicking(mShader, mModel, pickID);
+        renderObjectPicking(mShader, mModel2, pickID);
+        renderObjectPicking(mShader, mModel3, pickID);
 
         //Update Model Positions
         const rotationScalar = 0.05;

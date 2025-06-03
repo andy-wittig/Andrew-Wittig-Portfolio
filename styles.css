@@ -16,6 +16,7 @@ html, head, body
 #overlay
 {
     position: relative;
+    pointer-events: none;
 }
 
 .portfolio-name

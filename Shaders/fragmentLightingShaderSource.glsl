@@ -43,6 +43,7 @@ uniform dirLight mDirLight;
 uniform pointLight mPointLights[NR_POINT_LIGHTS];
 uniform vec3 viewPos;
 uniform bool emissive;
+uniform vec3 colorMultiplier;
 
 vec3 calcPointLight(pointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 calcDirLight(dirLight light, vec3 normal, vec3 viewDir);
@@ -74,7 +75,7 @@ void main()
 		result += emission * emissionScaler;
 	}
 	
-	fragColor = vec4(result, material.alpha);
+	fragColor = vec4(result * colorMultiplier, material.alpha);
 }
 
 vec3 calcPointLight(pointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)

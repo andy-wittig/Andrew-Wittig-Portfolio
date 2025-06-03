@@ -72,8 +72,10 @@ function assignUniqueID()
 {
     while (true)
     {
-        const new_id = [Math.floor(Math.random() * 255) + 1, Math.floor(Math.random() * 255) + 1, Math.floor(Math.random() * 255) + 1, 255.0];
-
+        const new_id = [(Math.floor(Math.random() * 255) + 1) / 255, 
+                        (Math.floor(Math.random() * 255) + 1) / 255, 
+                        (Math.floor(Math.random() * 255) + 1) / 255, 1.0];
+        
         let isDuplicate = false;
 
         for (let i = 0; i < id_list.length; i++)
@@ -85,6 +87,7 @@ function assignUniqueID()
         if (!isDuplicate)
         {
             id_list.push(new_id);
+            console.log(new_id);
             return new_id;
         }
     }
@@ -121,7 +124,7 @@ async function runEngine()
         var aspect = canvas.width / canvas.height;
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-        var cameraPos = [[0, 6, 8], [0, 2, 0], [0, 1, 0]];
+        var cameraPos = [[-6, 8, 4], [0, 4, 0], [0, 1, 0]];
         mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
 
         mShader.enableShader();
@@ -137,20 +140,27 @@ async function runEngine()
         const data = new Uint8Array(4);
 
         gl.readPixels(pixelX, pixelY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
-        const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+        //console.log("x: " + pixelX + ", y: " + pixelY + ", data:" + data[0] + "," + data[1] + "," + data[2] + "," + data[3]);
+        const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24) >>> 0;
+        //console.log("\n" + id);
 
+        mShader.enableShader();
         if (id > 0) 
         {
-            console.log("Oject hovered over!");
+            gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [data[0] / 255, data[1] / 255, data[2] / 255]);
+        }
+        else
+        {
+            gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         }
     }
 
     //Setup GPU program
     mShader.enableShader();
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-1, 0, 0]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-.8, -.8, -1]);
     gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.8, .8, .8]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.8, .8, .8]);
+    gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.4, .4, .4]);
 
     let mouseX = -1;
     let mouseY = -1;
@@ -170,13 +180,12 @@ async function runEngine()
 
         //Render Picking Buffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
-        //gl.viewport(0, 0, canvas.width , canvas.height); might cause visual bugs
         
         mPickingShader.enableShader();
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
 	    gl.uniformMatrix4fv(mPickingShader.getUniformLocation("viewMatrix"), false, viewMatrix);
-        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModelId);
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModelId); 
 
         mModel.render();
 
@@ -186,6 +195,7 @@ async function runEngine()
 
         //Render Objects
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
         mShader.enableShader();
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
         gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
@@ -206,6 +216,7 @@ async function runEngine()
         const rect = canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
+        //console.log("x: " + mouseX + ", y: " + mouseY);
      });
 }
 

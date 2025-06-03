@@ -31,6 +31,7 @@ export default class Object
         this.specularPath = specularPath || null;
         this.normalPath = normalPath || null;
         this.emissionPath = emissionPath || null;
+        this.id = [0, 0, 0, 1];
     }
 
     async Initialize()
@@ -141,6 +142,16 @@ export default class Object
         gl.bindVertexArray(null);
     }
 
+    setID(id)
+    {
+        this.id = id;
+    }
+
+    getID()
+    {
+        return this.id;
+    }
+
     getModelMatrix()
     {
         return this.modelMatrix;
@@ -149,5 +160,10 @@ export default class Object
     rotate(angle, axis)
     {
         mat4.rotate(this.modelMatrix, this.modelMatrix, angle, axis);
+    }
+
+    translate(transVec)
+    {
+        mat4.translate(this.modelMatrix, this.modelMatrix, transVec);
     }
 }

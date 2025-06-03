@@ -24,10 +24,14 @@ function resizeCanvas()
     setFrameBufferAttatchmentSize(canvas.width, canvas.height);
 }
 
-//Objects
+//Shaders
 const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/fragmentLightingShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
+
+//Objects
 const mModel = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
+const mModel2 = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
+const mModel3 = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -96,16 +100,22 @@ function assignUniqueID()
 let deltaTime = 0;
 async function runEngine()
 {
+    //Init
     await mShader.Initialize();
     await mPickingShader.Initialize();
-    await mModel.Initialize();
 
-    //Attibute and Uniform Positions
-    const projectionMatrixLocation = mShader.getUniformLocation("projectionMatrix");
-    const viewMatrixLocation = mShader.getUniformLocation("viewMatrix");
+    await mModel.Initialize();
+    await mModel2.Initialize();
+    await mModel3.Initialize();    
+
+    mModel.setID(assignUniqueID());
+    mModel2.setID(assignUniqueID());
+    mModel3.setID(assignUniqueID());
+
+    mModel2.translate([4, 0, 0]);
+    mModel3.translate([-4, 0, 0]);
 
     //WebGL Render Settings
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -115,22 +125,15 @@ async function runEngine()
     const fieldOfView = (60 * Math.PI) / 180;
     const zNear = 0.1;
     const zFar = 100.0;
-
-    var projectionMatrix = mat4.create();
-    var viewMatrix = mat4.create();
+    const cameraPos = [new Float32Array([0, 6, 8]), new Float32Array([0, 4, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
+    const projectionMatrix = mat4.create();
+    const viewMatrix = mat4.create();
 
     function updateCamera()
     {
-        var aspect = canvas.width / canvas.height;
+        const aspect = canvas.width / canvas.height;
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-        var cameraPos = [[-6, 8, 4], [0, 4, 0], [0, 1, 0]];
         mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
-
-        mShader.enableShader();
-        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
-        gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-        gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
     }
 
     function pickObjects()
@@ -140,38 +143,22 @@ async function runEngine()
         const data = new Uint8Array(4);
 
         gl.readPixels(pixelX, pixelY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
-        //console.log("x: " + pixelX + ", y: " + pixelY + ", data:" + data[0] + "," + data[1] + "," + data[2] + "," + data[3]);
         const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24) >>> 0;
+        //console.log("x: " + pixelX + ", y: " + pixelY + ", data:" + data[0] + "," + data[1] + "," + data[2] + "," + data[3]);
         //console.log("\n" + id);
 
-        mShader.enableShader();
-        if (id > 0) 
-        {
-            gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [data[0] / 255, data[1] / 255, data[2] / 255]);
-        }
-        else
-        {
-            gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
-        }
+        return id;
     }
-
-    //Setup GPU program
-    mShader.enableShader();
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-.8, -.8, -1]);
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.8, .8, .8]);
-    gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.4, .4, .4]);
 
     let mouseX = -1;
     let mouseY = -1;
-    let then = 0;
-    const mModelId = assignUniqueID();
+    let prevTime = 0;
     
-    function update(now) 
+    function update(time) 
     {
-        now *= 0.001; //convert to seconds
-        deltaTime = now - then;
-        then = now;
+        time *= 0.001; //convert to seconds
+        deltaTime = time - prevTime;
+        prevTime = time;
 
         updateCamera();
 
@@ -182,14 +169,23 @@ async function runEngine()
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
         
         mPickingShader.enableShader();
-        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
+
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
 	    gl.uniformMatrix4fv(mPickingShader.getUniformLocation("viewMatrix"), false, viewMatrix);
-        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModelId); 
 
+        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel.getID()); 
         mModel.render();
 
-        pickObjects();
+        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel2.getModelMatrix());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel2.getID()); 
+        mModel2.render();
+
+        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel3.getModelMatrix());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel3.getID()); 
+        mModel3.render();
+
+        let pick_id = pickObjects();
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -197,13 +193,37 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-.8, -.8, -1]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.8, .8, .8]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.4, .4, .4]);
+        
+        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
+        gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
+        gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
         gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
         gl.uniform1f(mShader.getUniformLocation("material.shininess"), 40.0);
+         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
+
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
         mModel.render(mShader);
 
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel2.getModelMatrix());
+        mModel2.render(mShader);
+
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mModel3.getModelMatrix());
+        mModel3.render(mShader);
+
         //Update Model Positions
-        mModel.rotate(deltaTime * 0.2, [0, 1, 0]);
+        const rotationScalar = 0.05;
+        mModel.rotate(deltaTime * rotationScalar, [0, 1, 0]);
+        mModel2.rotate(deltaTime * rotationScalar, [0, 1, 0]);
+        mModel3.rotate(deltaTime * rotationScalar, [0, 1, 0]);
+        const sinAmplitude = 0.0005;
+        const sinFreqency = 1.2;
+        mModel.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
+        mModel2.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
+        mModel3.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
 
         requestAnimationFrame(update);
     }

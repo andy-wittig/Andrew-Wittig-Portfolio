@@ -162,6 +162,13 @@ export default class Object
         mat4.rotate(this.modelMatrix, this.modelMatrix, angle, axis);
     }
 
+    getRotation()
+    {
+        const rotationQuat = quat.create();
+        mat4.getRotation(rotationQuat, this.modelMatrix);
+        return rotationQuat;
+    }
+
     translate(transVec)
     {
         mat4.translate(this.modelMatrix, this.modelMatrix, transVec);

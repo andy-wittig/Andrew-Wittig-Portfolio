@@ -97,6 +97,16 @@ function assignUniqueID()
     }
 }
 
+function degToRad(degrees)
+{
+    return (degrees * Math.PI) / 180.0;
+}
+
+function radToDeg(rads)
+{
+    return rads * (180.0 / Math.PI);
+}
+
 let deltaTime = 0;
 async function runEngine()
 {
@@ -115,9 +125,9 @@ async function runEngine()
     mModel2.translate([3, 0, 0]);
     mModel3.translate([-3, 0, 0]);
 
-    mModel.rotate((-90 * Math.PI) / 180, [0, 1, 0]);
-    mModel2.rotate((-60 * Math.PI) / 180, [0, 1, 0]);
-    mModel3.rotate((-120 * Math.PI) / 180, [0, 1, 0]);
+    mModel.rotate((0 * Math.PI) / 180, [0, 1, 0]);
+    mModel2.rotate((30 * Math.PI) / 180, [0, 1, 0]);
+    mModel3.rotate((-30 * Math.PI) / 180, [0, 1, 0]);
 
     //WebGL Render Settings
     gl.clearDepth(1.0);
@@ -129,7 +139,8 @@ async function runEngine()
     const fieldOfView = (60 * Math.PI) / 180;
     const zNear = 0.1;
     const zFar = 100.0;
-    const cameraPos = [new Float32Array([0, 1, 6]), new Float32Array([0, 0, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
+    const cameraPos = [new Float32Array([0, 1, 8]), new Float32Array([0, 0, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
+
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
 
@@ -154,12 +165,52 @@ async function runEngine()
         return id;
     }
 
+    let stepRotationDeg = 0;
+    let startCameraAnim = false;
+    let cameraAnimDegree = 0;
+    
+    function cameraRotate(degree)
+    {
+        const radius = 8;
+        const rotationSpeed = 60;
+
+        if (stepRotationDeg < degree)
+        {
+            stepRotationDeg += deltaTime * rotationSpeed;
+        }
+        else if (stepRotationDeg > degree)
+        {
+            stepRotationDeg -= deltaTime * rotationSpeed;
+        }
+
+        if (Math.round(stepRotationDeg) === degree) 
+        {
+            stepRotationDeg = degree;
+            startCameraAnim = false; 
+        }
+
+        cameraPos[0][0] = radius * Math.sin(degToRad(stepRotationDeg));
+        cameraPos[0][1] = 1;
+        cameraPos[0][2] = radius * Math.cos(degToRad(stepRotationDeg));
+    }
+
     function renderObjectPicking(shader, object, id)
     {
         var objectID = object.getID();
         var encodedObjectID = objectID[0] * 255 + (objectID[1] * 255 << 8) + (objectID[2] * 255 << 16) + (objectID[3] * 255 << 24) >>> 0;
         
-        if (id == encodedObjectID) { gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [objectID[0], objectID[1], objectID[2]]); }
+        if (id == encodedObjectID) 
+        {
+            //get y objects rotation
+            const rotationQuat = object.getRotation();
+            const angleY = Math.atan2(2 * (rotationQuat[3] * rotationQuat[1] + rotationQuat[0] * rotationQuat[2]),
+                                    1 - 2 * (rotationQuat[1] * rotationQuat[1] + rotationQuat[2] * rotationQuat[2]));
+            cameraAnimDegree = Math.round(radToDeg(angleY));
+            //console.log(cameraAnimDegree);
+
+            if (!startCameraAnim && Math.round(stepRotationDeg) !== cameraAnimDegree) { startCameraAnim = true; }
+            gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [objectID[0], objectID[1], objectID[2]]); 
+        }
         gl.uniformMatrix4fv(shader.getUniformLocation("modelMatrix"), false, object.getModelMatrix());
         object.render(shader);
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
@@ -176,6 +227,7 @@ async function runEngine()
         prevTime = time;
 
         updateCamera();
+        if (startCameraAnim) { cameraRotate(cameraAnimDegree); }
 
         //Render Picking Buffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);

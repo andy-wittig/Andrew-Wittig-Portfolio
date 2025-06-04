@@ -169,6 +169,13 @@ export default class Object
         return rotationQuat;
     }
 
+    getPosition()
+    {
+        const positionVec = vec3.create();
+        mat4.getTranslation(positionVec, this.modelMatrix);
+        return positionVec;
+    }
+
     translate(transVec)
     {
         mat4.translate(this.modelMatrix, this.modelMatrix, transVec);

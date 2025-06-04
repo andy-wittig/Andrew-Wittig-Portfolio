@@ -47,7 +47,7 @@ export default class objectLoader
                             cVert.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]), parseFloat(faceParts[2])); //parseFloat converts string into floating-point representation
                             break;
                         case "t": //UV
-                            cUV.push(parseFloat(faceParts[0]), 1.0 - parseFloat(faceParts[1]));
+                            cUV.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]));
                             break;
                         case "n": //Normal
                             cNorm.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]), parseFloat(faceParts[2]));
@@ -96,7 +96,7 @@ export default class objectLoader
     generateTangents(vPositions, vTextures, vIndices)
     {
         const calcTangents = new Array(vPositions.length).fill(0);
-        
+
         for (let i = 0; i < vIndices.length; i += 3)
         {
             const v0 = [vPositions[vIndices[i] * 3], vPositions[vIndices[i] * 3 + 1], vPositions[vIndices[i] * 3 + 2]];

@@ -29,9 +29,9 @@ const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/f
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 
 //Objects
-const mModel = new Object("Models/retro_tv.obj", "Textures/white_texture.png", null, "Textures/undefined_normal.png");
-const mModel2 = new Object("Models/retro_tv.obj", "Textures/white_texture.png", null, "Textures/undefined_normal.png");
-const mModel3 = new Object("Models/retro_tv.obj", "Textures/white_texture.png", null, "Textures/undefined_normal.png");
+const mModel = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
+const mModel2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
+const mModel3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -112,8 +112,12 @@ async function runEngine()
     mModel2.setID(assignUniqueID());
     mModel3.setID(assignUniqueID());
 
-    mModel2.translate([4, 0, 0]);
-    mModel3.translate([-4, 0, 0]);
+    mModel2.translate([3, 0, 0]);
+    mModel3.translate([-3, 0, 0]);
+
+    mModel.rotate((-90 * Math.PI) / 180, [0, 1, 0]);
+    mModel2.rotate((-60 * Math.PI) / 180, [0, 1, 0]);
+    mModel3.rotate((-120 * Math.PI) / 180, [0, 1, 0]);
 
     //WebGL Render Settings
     gl.clearDepth(1.0);
@@ -125,7 +129,7 @@ async function runEngine()
     const fieldOfView = (60 * Math.PI) / 180;
     const zNear = 0.1;
     const zFar = 100.0;
-    const cameraPos = [new Float32Array([0, 2, 6]), new Float32Array([0, 0, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
+    const cameraPos = [new Float32Array([0, 1, 6]), new Float32Array([0, 0, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
 
@@ -204,9 +208,9 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -.8, -.8]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -1, -1]);
         gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.8, .8, .8]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.6, .6, .6]);
         gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.4, .4, .4]);
         
         gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
@@ -221,10 +225,12 @@ async function runEngine()
         renderObjectPicking(mShader, mModel3, pickID);
 
         //Update Model Positions
+        /*
         const rotationScalar = 0.1;
         mModel.rotate(deltaTime * rotationScalar, [0, 1, 0]);
         mModel2.rotate(deltaTime * rotationScalar, [0, 1, 0]);
         mModel3.rotate(deltaTime * rotationScalar, [0, 1, 0]);
+        */
         const sinAmplitude = 0.0005;
         const sinFreqency = 1.2;
         mModel.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);

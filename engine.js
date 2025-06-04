@@ -29,9 +29,9 @@ const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/f
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 
 //Objects
-const mModel = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
-const mModel2 = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
-const mModel3 = new Object("Models/obelisk.obj", "Textures/slate_diffuse2.png", null, "Textures/slate_normal.png");
+const mModel = new Object("Models/retro_tv.obj", "Textures/white_texture.png", null, "Textures/undefined_normal.png");
+const mModel2 = new Object("Models/retro_tv.obj", "Textures/white_texture.png", null, "Textures/undefined_normal.png");
+const mModel3 = new Object("Models/retro_tv.obj", "Textures/white_texture.png", null, "Textures/undefined_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -125,7 +125,7 @@ async function runEngine()
     const fieldOfView = (60 * Math.PI) / 180;
     const zNear = 0.1;
     const zFar = 100.0;
-    const cameraPos = [new Float32Array([0, 6, 8]), new Float32Array([0, 4, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
+    const cameraPos = [new Float32Array([0, 2, 6]), new Float32Array([0, 0, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
 
@@ -204,7 +204,7 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [-.8, -.8, -1]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -.8, -.8]);
         gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
         gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.8, .8, .8]);
         gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.4, .4, .4]);
@@ -221,7 +221,7 @@ async function runEngine()
         renderObjectPicking(mShader, mModel3, pickID);
 
         //Update Model Positions
-        const rotationScalar = 0.05;
+        const rotationScalar = 0.1;
         mModel.rotate(deltaTime * rotationScalar, [0, 1, 0]);
         mModel2.rotate(deltaTime * rotationScalar, [0, 1, 0]);
         mModel3.rotate(deltaTime * rotationScalar, [0, 1, 0]);

@@ -3,7 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="styles.css"> <!--Stylesheets are applied in the order they are linked-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
 
         <title>WebGL Demo</title>
     </head>
@@ -13,7 +14,13 @@
                 HTML5 canvas not supported in your browser!
             </canvas>
             <div id="overlay">
-                <div class="portfolio-name">[ANDREW WITTIG]</div>
+                <h1 style="text-align: center;">[ANDREW WITTIG]</h1>
+                <h2 style="text-align: center;">
+                    <a href="https://github.com/andy-wittig" target="_blank">
+                        <i class="fa fa-github" style="font-size: 36px; color: white;"></i>-Github</a>
+                    <a href="https://github.com/andy-wittig" target="_blank">
+                        <i class="fa fa-envelope" style="font-size: 36px; color: white;"></i>-email</a>
+                </h2>
             </div>
         </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"

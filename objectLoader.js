@@ -47,7 +47,7 @@ export default class objectLoader
                             cVert.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]), parseFloat(faceParts[2])); //parseFloat converts string into floating-point representation
                             break;
                         case "t": //UV
-                            cUV.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]));
+                            cUV.push(parseFloat(faceParts[0]), 1.0 - parseFloat(faceParts[1]));
                             break;
                         case "n": //Normal
                             cNorm.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]), parseFloat(faceParts[2]));
@@ -95,7 +95,8 @@ export default class objectLoader
 
     generateTangents(vPositions, vTextures, vIndices)
     {
-        const calcTangents = [];
+        const calcTangents = new Array(vPositions.length).fill(0);
+        
         for (let i = 0; i < vIndices.length; i += 3)
         {
             const v0 = [vPositions[vIndices[i] * 3], vPositions[vIndices[i] * 3 + 1], vPositions[vIndices[i] * 3 + 2]];
@@ -115,11 +116,38 @@ export default class objectLoader
             const deltaV2 = v2Tex[1] - v0Tex[1];
 
             const f = 1.0 / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+            
+            const tangents = [
+                f * (-deltaU2 * edge1[0] + deltaU1 * edge2[0]),
+                f * (-deltaU2 * edge1[1] + deltaU1 * edge2[1]),
+                f * (-deltaU2 * edge1[2] + deltaU1 * edge2[2])
+            ];
 
-            calcTangents.push(f * (-deltaU2 * edge1[0] + deltaU1 * edge2[0]));
-            calcTangents.push(f * (-deltaU2 * edge1[1] + deltaU1 * edge2[1]));
-            calcTangents.push(f * (-deltaU2 * edge1[2] + deltaU1 * edge2[2]));
+            calcTangents[vIndices[i] * 3] += tangents[0];
+            calcTangents[vIndices[i] * 3 + 1] += tangents[1];
+            calcTangents[vIndices[i] * 3 + 2] += tangents[2];
+
+            calcTangents[vIndices[i + 1] * 3] += tangents[0];
+            calcTangents[vIndices[i + 1] * 3 + 1] += tangents[1];
+            calcTangents[vIndices[i + 1] * 3 + 2] += tangents[2];
+
+            calcTangents[vIndices[i + 2] * 3] += tangents[0];
+            calcTangents[vIndices[i + 2] * 3 + 1] += tangents[1];
+            calcTangents[vIndices[i + 2] * 3 + 2] += tangents[2];
         }
+
+        //Normalize Tangents
+        for (let i = 0; i < calcTangents.length; i += 3)
+        {
+            const len = Math.hypot(calcTangents[i], calcTangents[i + 1], calcTangents[i + 2]);
+            if (len > 0)
+            {
+                calcTangents[i] /= len;
+                calcTangents[i + 1] /= len;
+                calcTangents[i + 2] /= len;
+            }
+        }
+        
         return calcTangents;
     }
 }

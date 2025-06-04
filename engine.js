@@ -122,12 +122,15 @@ async function runEngine()
     mModel2.setID(assignUniqueID());
     mModel3.setID(assignUniqueID());
 
-    mModel2.translate([3, 0, 0]);
-    mModel3.translate([-3, 0, 0]);
-
     mModel.rotate((0 * Math.PI) / 180, [0, 1, 0]);
-    mModel2.rotate((30 * Math.PI) / 180, [0, 1, 0]);
-    mModel3.rotate((-30 * Math.PI) / 180, [0, 1, 0]);
+    mModel2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
+    mModel3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
+
+    const objectPositionRadius = 5;
+
+    mModel.translate([0, 0, objectPositionRadius]);
+    mModel2.translate([0, 0, objectPositionRadius]);
+    mModel3.translate([0, 0, objectPositionRadius]);
 
     //WebGL Render Settings
     gl.clearDepth(1.0);
@@ -136,11 +139,17 @@ async function runEngine()
     gl.depthFunc(gl.LESS);
 
     //Camera
+    let firstClick = false;
     const fieldOfView = (60 * Math.PI) / 180;
     const zNear = 0.1;
     const zFar = 100.0;
-    const cameraRadius = 6;
-    const cameraPos = [new Float32Array([0, 1, cameraRadius]), new Float32Array([0, 0, 0]), new Float32Array([0, 1, 0])]; //position, eye, up vector
+    const cameraRadius = 10;
+    const cameraStartRadius = 12;
+    const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 2.0, (cameraStartRadius) * Math.cos(degToRad(0))];
+    const cameraStartingEye = [mModel.getPosition()[0], -2.0, mModel.getPosition()[1]];
+    const cameraPos = [cameraStartingPosition,
+                       cameraStartingEye,
+                       new Float32Array([0, 1, 0])]; //position, eye, up vector
 
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
@@ -166,57 +175,54 @@ async function runEngine()
         return id;
     }
 
-    let stepRotationDeg = 0;
-    let stepPosition = 0;
-    let cameraAnimDegree = 0;
-    let cameraAnimPosition = 0;
+    let animStepRotation = 0;
+    let animStepPosition = [0, 0, 0];
+    let animStepRadius = 0;
+    let animStartRotation = 0;
+    let animStartPosition = 0;
+    let animStartRadius = 0;
+    let animRotationFinal = 0;
+    let animPositionFinal = 0;
+    let animRadiusFinal = 0;
     let startCameraAnim = false;
     let isLeftMouseDown = false;
-    
-    function cameraAnimate(degree, position)
+    let animProgress = 0;
+
+    function easeInOut(t)
     {
-        const animSpeed = 40;
-
-        if (stepRotationDeg < degree)
+        if (t <= 0.5)
         {
-            stepRotationDeg += deltaTime * animSpeed; 
+            return 2.0 * t * t;
         }
-        else if (stepRotationDeg > degree)
-        {
-            stepRotationDeg -= deltaTime * animSpeed;
-        }
+        t -= 0.5;
+        return 2.0 * t * (1.0 - t) + 0.5;
+    }
+    
+    function cameraAnimate(degree, position, radius)
+    {
+        const animDuration = 3;
+        animProgress += deltaTime / animDuration;
+        animProgress = Math.min(animProgress, 1);
 
-        if (stepPosition < position)
-        {
-            stepPosition += deltaTime * animSpeed * 0.1;
-        }
-        else if (stepPosition > position)
-        {
-            stepPosition -= deltaTime * animSpeed * 0.1;
-        }
+        const easedProgress = easeInOut(animProgress);
 
-        const snap_threshhold = 0.1;
+        animStepRotation = animStartRotation + (degree - animStartRotation) * easedProgress;
+        animStepRadius = animStartRadius + (radius - animStartRadius) * easedProgress;
+        animStepPosition[0] = animStartPosition[0] + (position[0] - animStartPosition[0]) * easedProgress;
+        animStepPosition[1] = animStartPosition[1] + (position[1] - animStartPosition[1]) * easedProgress;
+        animStepPosition[2] = animStartPosition[2] + (position[2] - animStartPosition[2]) * easedProgress;
 
-        if (Math.abs(stepRotationDeg - degree) < snap_threshhold)
-        {
-            stepRotationDeg = degree;
-        }
+        cameraPos[0][0] = animStepRadius * Math.sin(degToRad(animStepRotation));
+        cameraPos[0][1] = 2.0;
+        cameraPos[0][2] = animStepRadius * Math.cos(degToRad(animStepRotation));
+        cameraPos[1][0] = animStepPosition[0];
+        cameraPos[1][1] = animStepPosition[1];
+        cameraPos[1][2] = animStepPosition[2];
 
-        if (Math.abs(stepPosition - position) < snap_threshhold)
-        {
-            stepPosition = position;
-        }
-
-        if (Math.abs(stepRotationDeg - degree) < snap_threshhold &&
-            Math.abs(stepPosition - position) < snap_threshhold)
+        if (animProgress == 1) 
         {
             startCameraAnim = false;
         }
-
-        cameraPos[0][0] = cameraRadius * Math.sin(degToRad(stepRotationDeg));
-        cameraPos[0][1] = 1;
-        cameraPos[0][2] = cameraRadius * Math.cos(degToRad(stepRotationDeg));
-        cameraPos[1][0] = stepPosition;
     }
 
     function renderObjectPicking(shader, object, id)
@@ -226,18 +232,32 @@ async function runEngine()
         
         if (id == encodedObjectID) 
         {
-            if (isLeftMouseDown)
+            if (isLeftMouseDown && !startCameraAnim)
             {
                 //get y objects rotation and position
                 const rotationQuat = object.getRotation();
                 const angleY = Math.atan2(2 * (rotationQuat[3] * rotationQuat[1] + rotationQuat[0] * rotationQuat[2]),
                                         1 - 2 * (rotationQuat[1] * rotationQuat[1] + rotationQuat[2] * rotationQuat[2]));
-                cameraAnimDegree = Math.round(radToDeg(angleY)) * 1.8;
-                cameraAnimPosition = object.getPosition()[0];
+                animRotationFinal = Math.round(radToDeg(angleY));
+                animPositionFinal = object.getPosition();
+                animRadiusFinal = cameraRadius;
 
-                if (!startCameraAnim && Math.round(stepRotationDeg) !== cameraAnimDegree && Math.round(stepPosition) !== cameraAnimPosition) 
-                { 
-                    startCameraAnim = true; 
+                if (!firstClick)
+                {
+                    startCameraAnim = true;
+                    animStartRotation = 0.0;
+                    animStartPosition = [...cameraStartingEye];
+                    animStartRadius = cameraStartRadius;
+                    animProgress = 0;
+                    firstClick = true;
+                }
+                else
+                {
+                    startCameraAnim = true;
+                    animStartRotation = animStepRotation;
+                    animStartPosition = animStepPosition;
+                    animStartRadius = cameraRadius;
+                    animProgress = 0;
                 }
             }
             const selectColor = [1.4, 1.4, 1.4];
@@ -259,8 +279,8 @@ async function runEngine()
         deltaTime = time - prevTime;
         prevTime = time;
 
-        if (startCameraAnim) { cameraAnimate(cameraAnimDegree, cameraAnimPosition); }
         updateCamera();
+        if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
 
         //Render Picking Buffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);

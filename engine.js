@@ -127,7 +127,7 @@ async function runEngine()
     mMonitor3.setID(assignUniqueID());
 
     mMonitor.setName("<b>Who am I?</b>");
-    mMonitor.setDescription("Driven to creating emmersive experiences with stunning visuals.");
+    mMonitor.setDescription("Driven to creating immersive experiences with stunning visuals.");
     mMonitor2.setName("<b>Projects</b>");
     mMonitor2.setDescription(`
     <ul>

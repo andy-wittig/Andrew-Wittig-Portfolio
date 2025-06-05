@@ -24,6 +24,14 @@ function resizeCanvas()
     setFrameBufferAttatchmentSize(canvas.width, canvas.height);
 }
 
+const divOverlayElement = document.getElementById("overlay");
+const typewriterElement = document.getElementById("typewriter");
+const divMonitorText = document.createElement("div");
+divMonitorText.className = "floating-div"
+const textNode = document.createTextNode("");
+divMonitorText.append(textNode);
+divOverlayElement.append(divMonitorText);
+
 //Shaders
 const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/fragmentLightingShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
@@ -122,6 +130,10 @@ async function runEngine()
     mModel2.setID(assignUniqueID());
     mModel3.setID(assignUniqueID());
 
+    mModel.setDescription("Who am I?");
+    mModel2.setDescription("Projects");
+    mModel3.setDescription("Skills");
+
     mModel.rotate((0 * Math.PI) / 180, [0, 1, 0]);
     mModel2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
     mModel3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
@@ -160,6 +172,8 @@ async function runEngine()
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
         mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
     }
+
+    var selectedObject = mModel;
 
     function pickObjects()
     {
@@ -232,7 +246,7 @@ async function runEngine()
         
         if (id == encodedObjectID) 
         {
-            if (isLeftMouseDown && !startCameraAnim)
+            if (isLeftMouseDown && !startCameraAnim && (selectedObject !== object || !firstClick))
             {
                 //get y objects rotation and position
                 const rotationQuat = object.getRotation();
@@ -241,6 +255,7 @@ async function runEngine()
                 animRotationFinal = Math.round(radToDeg(angleY));
                 animPositionFinal = object.getPosition();
                 animRadiusFinal = cameraRadius;
+                selectedObject = object;
 
                 if (!firstClick)
                 {
@@ -267,6 +282,62 @@ async function runEngine()
         gl.uniformMatrix4fv(shader.getUniformLocation("modelMatrix"), false, object.getModelMatrix());
         object.render(shader);
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
+    }
+
+    function renderMonitorText()
+    {
+        var point = [0, 0, 0, 1];
+
+        var worldPosition = vec4.create();
+        vec4.transformMat4(worldPosition, point, selectedObject.getModelMatrix());
+
+        var viewProjectionMatrix = mat4.create();
+        mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
+
+        var clipspace = vec4.create();
+        vec4.transformMat4(clipspace, worldPosition, viewProjectionMatrix);
+
+        clipspace[0] /= clipspace[3];
+        clipspace[1] /= clipspace[3];
+
+        var pixelTextX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.width;
+        var pixelTextY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.height;
+
+        divMonitorText.style.left = Math.floor(pixelTextX - divMonitorText.offsetWidth / 2) + "px";
+        divMonitorText.style.top = Math.floor(pixelTextY) + "px";
+
+        if (startCameraAnim == false && firstClick) 
+        {
+            const  stylesheet = document.styleSheets[0]
+            const description = selectedObject.getDescription();
+
+            for (let i = 0; i < stylesheet.length; i++)
+            {
+                const currentRule = stylesheet.cssRules[i];
+                if (rule.type == CSSRule.KEYFRAMES_RULE && rule.name == "typewriter")
+                {
+                    stylesheet.deleteRule(i);
+                }
+            }
+
+            stylesheet.insertRule(`
+                @keyframes typewriter
+                {
+                    from { width: 0; }
+                    to { width: ${description.length}ch; };
+                }
+            `, stylesheet.cssRules.length);
+
+            textNode.nodeValue = description;
+
+            divMonitorText.classList.remove("anim_typewriter");
+            divMonitorText.classList.add("anim_typewriter");
+        }
+        else 
+        {
+            textNode.nodeValue = ""; 
+            divMonitorText.classList.remove("anim_typewriter");
+        }
     }
 
     let mouseX = -1;
@@ -330,17 +401,14 @@ async function runEngine()
         renderObjectPicking(mShader, mModel3, pickID);
 
         //Update Model Positions
-        /*
-        const rotationScalar = 0.1;
-        mModel.rotate(deltaTime * rotationScalar, [0, 1, 0]);
-        mModel2.rotate(deltaTime * rotationScalar, [0, 1, 0]);
-        mModel3.rotate(deltaTime * rotationScalar, [0, 1, 0]);
-        */
         const sinAmplitude = 0.00025;
         const sinFreqency = 1.2;
         mModel.translate([0, Math.sin((time + 1) * sinFreqency) * sinAmplitude, 0]);
         mModel2.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
         mModel3.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
+
+        //Monitor Text Rendering
+        renderMonitorText();
 
         requestAnimationFrame(update);
     }

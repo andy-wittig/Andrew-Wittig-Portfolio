@@ -32,6 +32,7 @@ export default class Object
         this.normalPath = normalPath || null;
         this.emissionPath = emissionPath || null;
         this.id = [0, 0, 0, 1];
+        this.description = "";
     }
 
     async Initialize()
@@ -150,6 +151,16 @@ export default class Object
     getID()
     {
         return this.id;
+    }
+
+    setDescription(text)
+    {
+        this.description = text;
+    }
+
+    getDescription()
+    {
+        return this.description;
     }
 
     getModelMatrix()

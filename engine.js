@@ -126,11 +126,24 @@ async function runEngine()
     mMonitor2.setID(assignUniqueID());
     mMonitor3.setID(assignUniqueID());
 
-    mMonitor.setName("Who am I?");
-    mMonitor.setDescription("Driven to creating stunning visuals.");
-    mMonitor2.setName("Projects");
-    mMonitor3.setName("Skills");
-    mMonitor3.setDescription("-Javascript, HTML, CSS<br>-C++<br>-WebGL, OpenGL");
+    mMonitor.setName("<b>Who am I?</b>");
+    mMonitor.setDescription("Driven to creating emmersive experiences with stunning visuals.");
+    mMonitor2.setName("<b>Projects</b>");
+    mMonitor2.setDescription(`
+    <ul>
+    <li>Project 1</li>
+    <li>Project 2</li>
+    <li>Project 3</li>
+    </ul> 
+    `);
+    mMonitor3.setName("<b>Skills</b>");
+    mMonitor3.setDescription(`
+    <ul>
+    <li>C++</li>
+    <li>WebGL, OpenGL</li>
+    <li>Javascript, HTML, CSS</li>
+    </ul> 
+    `);
 
     mMonitor.rotate((0 * Math.PI) / 180, [0, 1, 0]);
     mMonitor2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
@@ -295,7 +308,7 @@ async function runEngine()
 
     function renderMonitorText()
     {
-        const point = [0, 0, 0, 1];
+        const point = [0, 0.4, 0, 1];
 
         var worldPosition = vec4.create();
         vec4.transformMat4(worldPosition, point, selectedObject.getModelMatrix());
@@ -317,6 +330,17 @@ async function runEngine()
         divMonitorName.innerHTML = name;
         divMonitorDesc.innerHTML = desc;
 
+        const referenceHeight = 1080;
+        const baseFontSize = 24;
+        const baseElementWidth = 320;
+
+        const screenRatio = canvas.height / referenceHeight;
+        var newFontSize = baseFontSize * screenRatio;
+        var newElementWidth = baseElementWidth * screenRatio;
+
+        divMonitorElement.style.fontSize = `${newFontSize}px`;
+        divMonitorElement.style.width = `${newElementWidth}px`;
+
         divMonitorElement.style.left = Math.floor(pixelTextX - divMonitorElement.offsetWidth / 2) + "px";
         divMonitorElement.style.top = Math.floor(pixelTextY) + "px";
 
@@ -332,11 +356,13 @@ async function runEngine()
                 }
             }
 
+            var formattedName = name.replace(/<b>/g, "").replace(/<\/b>/g, "");
+
             stylesheet.insertRule(`
                 @keyframes typewriter
                 {
                     from { width: 0; }
-                    to { width: ${name.length}ch; }
+                    to { width: ${formattedName.length}ch; }
                 }
             `, stylesheet.cssRules.length);
 

@@ -16,30 +16,27 @@ if (!gl)
 }
 export default gl;
 
-function resizeCanvas()
-{
-    canvas.width = gl.canvas.clientWidth;
-    canvas.height = gl.canvas.clientHeight;
-    gl.viewport(0, 0, canvas.width , canvas.height);
-    setFrameBufferAttatchmentSize(canvas.width, canvas.height);
-}
-
+//Monitor Text HTML Integration
 const divOverlayElement = document.getElementById("overlay");
 const typewriterElement = document.getElementById("typewriter");
-const divMonitorText = document.createElement("div");
-divMonitorText.className = "floating-div"
-const textNode = document.createTextNode("");
-divMonitorText.append(textNode);
-divOverlayElement.append(divMonitorText);
+
+const divMonitorElement = document.createElement("div");
+const divMonitorName = document.createElement("div");
+const divMonitorDesc = document.createElement("div");
+divMonitorElement.className = "floating-div";
+
+divMonitorElement.append(divMonitorName);
+divMonitorElement.append(divMonitorDesc);
+divOverlayElement.append(divMonitorElement);
 
 //Shaders
 const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/fragmentLightingShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 
 //Objects
-const mModel = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
-const mModel2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
-const mModel3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
+const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
+const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
+const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -99,7 +96,6 @@ function assignUniqueID()
         if (!isDuplicate)
         {
             id_list.push(new_id);
-            console.log(new_id);
             return new_id;
         }
     }
@@ -122,27 +118,29 @@ async function runEngine()
     await mShader.Initialize();
     await mPickingShader.Initialize();
 
-    await mModel.Initialize();
-    await mModel2.Initialize();
-    await mModel3.Initialize();    
+    await mMonitor.Initialize();
+    await mMonitor2.Initialize();
+    await mMonitor3.Initialize();    
 
-    mModel.setID(assignUniqueID());
-    mModel2.setID(assignUniqueID());
-    mModel3.setID(assignUniqueID());
+    mMonitor.setID(assignUniqueID());
+    mMonitor2.setID(assignUniqueID());
+    mMonitor3.setID(assignUniqueID());
 
-    mModel.setDescription("Who am I?");
-    mModel2.setDescription("Projects");
-    mModel3.setDescription("Skills");
+    mMonitor.setName("Who am I?");
+    mMonitor.setDescription("Driven to creating stunning visuals.");
+    mMonitor2.setName("Projects");
+    mMonitor3.setName("Skills");
+    mMonitor3.setDescription("-Javascript, HTML, CSS<br>-C++<br>-WebGL, OpenGL");
 
-    mModel.rotate((0 * Math.PI) / 180, [0, 1, 0]);
-    mModel2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
-    mModel3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
+    mMonitor.rotate((0 * Math.PI) / 180, [0, 1, 0]);
+    mMonitor2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
+    mMonitor3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
 
     const objectPositionRadius = 5;
 
-    mModel.translate([0, 0, objectPositionRadius]);
-    mModel2.translate([0, 0, objectPositionRadius]);
-    mModel3.translate([0, 0, objectPositionRadius]);
+    mMonitor.translate([0, 0, objectPositionRadius]);
+    mMonitor2.translate([0, 0, objectPositionRadius]);
+    mMonitor3.translate([0, 0, objectPositionRadius]);
 
     //WebGL Render Settings
     gl.clearDepth(1.0);
@@ -158,13 +156,22 @@ async function runEngine()
     const cameraRadius = 10;
     const cameraStartRadius = 12;
     const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 2.0, (cameraStartRadius) * Math.cos(degToRad(0))];
-    const cameraStartingEye = [mModel.getPosition()[0], -2.0, mModel.getPosition()[1]];
+    const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
     const cameraPos = [cameraStartingPosition,
                        cameraStartingEye,
                        new Float32Array([0, 1, 0])]; //position, eye, up vector
 
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
+
+    function resizeCanvas()
+    {
+        canvas.width = gl.canvas.clientWidth;
+        canvas.height = gl.canvas.clientHeight;
+
+        gl.viewport(0, 0, canvas.width , canvas.height);
+        setFrameBufferAttatchmentSize(canvas.width, canvas.height);
+    }
 
     function updateCamera()
     {
@@ -173,7 +180,7 @@ async function runEngine()
         mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
     }
 
-    var selectedObject = mModel;
+    var selectedObject = mMonitor;
 
     function pickObjects()
     {
@@ -284,9 +291,11 @@ async function runEngine()
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
     }
 
+    let showDescription = false;
+
     function renderMonitorText()
     {
-        var point = [0, 0, 0, 1];
+        const point = [0, 0, 0, 1];
 
         var worldPosition = vec4.create();
         vec4.transformMat4(worldPosition, point, selectedObject.getModelMatrix());
@@ -303,18 +312,21 @@ async function runEngine()
         var pixelTextX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.width;
         var pixelTextY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.height;
 
-        divMonitorText.style.left = Math.floor(pixelTextX - divMonitorText.offsetWidth / 2) + "px";
-        divMonitorText.style.top = Math.floor(pixelTextY) + "px";
+        const name = selectedObject.getName();
+        const desc = selectedObject.getDescription();
+        divMonitorName.innerHTML = name;
+        divMonitorDesc.innerHTML = desc;
+
+        divMonitorElement.style.left = Math.floor(pixelTextX - divMonitorElement.offsetWidth / 2) + "px";
+        divMonitorElement.style.top = Math.floor(pixelTextY) + "px";
 
         if (startCameraAnim == false && firstClick) 
         {
-            const  stylesheet = document.styleSheets[0]
-            const description = selectedObject.getDescription();
-
-            for (let i = 0; i < stylesheet.length; i++)
+            const stylesheet = document.styleSheets[0];
+            for (let i = stylesheet.cssRules.length - 1; i >= 0 ; i--)
             {
                 const currentRule = stylesheet.cssRules[i];
-                if (rule.type == CSSRule.KEYFRAMES_RULE && rule.name == "typewriter")
+                if (currentRule.type == CSSRule.KEYFRAMES_RULE && currentRule.name == "typewriter")
                 {
                     stylesheet.deleteRule(i);
                 }
@@ -324,19 +336,28 @@ async function runEngine()
                 @keyframes typewriter
                 {
                     from { width: 0; }
-                    to { width: ${description.length}ch; };
+                    to { width: ${name.length}ch; }
                 }
             `, stylesheet.cssRules.length);
 
-            textNode.nodeValue = description;
+            divMonitorName.classList.remove("anim_typewriter");
+            divMonitorName.classList.add("anim_typewriter");
+            divMonitorName.style.visibility = "visible";
 
-            divMonitorText.classList.remove("anim_typewriter");
-            divMonitorText.classList.add("anim_typewriter");
+            if (showDescription)
+            {
+                divMonitorDesc.classList.remove("anim_fadein");
+                divMonitorDesc.classList.add("anim_fadein");
+                divMonitorDesc.style.visibility = "visible";
+            }
         }
-        else 
+        else
         {
-            textNode.nodeValue = ""; 
-            divMonitorText.classList.remove("anim_typewriter");
+            divMonitorName.style.visibility = "hidden";
+            divMonitorDesc.style.visibility = "hidden";
+            divMonitorName.classList.remove("anim_typewriter");
+            divMonitorDesc.classList.remove("anim_fadein");
+            showDescription = false;
         }
     }
 
@@ -364,17 +385,17 @@ async function runEngine()
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
 	    gl.uniformMatrix4fv(mPickingShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
-        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel.getModelMatrix());
-        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel.getID()); 
-        mModel.render();
+        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mMonitor.getModelMatrix());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mMonitor.getID()); 
+        mMonitor.render();
 
-        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel2.getModelMatrix());
-        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel2.getID()); 
-        mModel2.render();
+        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mMonitor2.getModelMatrix());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mMonitor2.getID()); 
+        mMonitor2.render();
 
-        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mModel3.getModelMatrix());
-        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mModel3.getID()); 
-        mModel3.render();
+        gl.uniformMatrix4fv(mPickingShader.getUniformLocation("modelMatrix"), false, mMonitor3.getModelMatrix());
+        gl.uniform4fv(mPickingShader.getUniformLocation("id"), mMonitor3.getID()); 
+        mMonitor3.render();
 
         let pickID = pickObjects();
 
@@ -396,16 +417,16 @@ async function runEngine()
         gl.uniform1f(mShader.getUniformLocation("material.shininess"), 40.0);
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
-        renderObjectPicking(mShader, mModel, pickID);
-        renderObjectPicking(mShader, mModel2, pickID);
-        renderObjectPicking(mShader, mModel3, pickID);
+        renderObjectPicking(mShader, mMonitor, pickID);
+        renderObjectPicking(mShader, mMonitor2, pickID);
+        renderObjectPicking(mShader, mMonitor3, pickID);
 
         //Update Model Positions
         const sinAmplitude = 0.00025;
         const sinFreqency = 1.2;
-        mModel.translate([0, Math.sin((time + 1) * sinFreqency) * sinAmplitude, 0]);
-        mModel2.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
-        mModel3.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
+        mMonitor.translate([0, Math.sin((time + 1) * sinFreqency) * sinAmplitude, 0]);
+        mMonitor2.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
+        mMonitor3.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
 
         //Monitor Text Rendering
         renderMonitorText();
@@ -413,6 +434,8 @@ async function runEngine()
         requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
+
+    //Event Listeners
 
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
@@ -429,6 +452,10 @@ async function runEngine()
 
     gl.canvas.addEventListener('mouseup', () => {
         isLeftMouseDown = false;
+    });
+
+    divMonitorName.addEventListener('animationend', (event) => {
+        showDescription = true;
     });
 }
 

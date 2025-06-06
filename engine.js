@@ -17,14 +17,18 @@ if (!gl)
 export default gl;
 
 //Monitor Text HTML Integration
+const divContainerElement = document.getElementById("container");
 const divOverlayElement = document.getElementById("overlay");
-const typewriterElement = document.getElementById("typewriter");
+
+const iconAnglesDown = document.createElement("i");
+iconAnglesDown.className = "fa fa-angle-double-down";
 
 const divMonitorElement = document.createElement("div");
 const divMonitorName = document.createElement("div");
 const divMonitorDesc = document.createElement("div");
 divMonitorElement.className = "floating-div";
 
+divContainerElement.append(iconAnglesDown);
 divMonitorElement.append(divMonitorName);
 divMonitorElement.append(divMonitorDesc);
 divOverlayElement.append(divMonitorElement);
@@ -366,23 +370,31 @@ async function runEngine()
                 }
             `, stylesheet.cssRules.length);
 
-            divMonitorName.classList.remove("anim_typewriter");
-            divMonitorName.classList.add("anim_typewriter");
+            divMonitorName.classList.remove("anim-typewriter");
+            divMonitorName.classList.add("anim-typewriter");
             divMonitorName.style.visibility = "visible";
 
             if (showDescription)
             {
-                divMonitorDesc.classList.remove("anim_fadein");
-                divMonitorDesc.classList.add("anim_fadein");
+                divMonitorDesc.classList.remove("anim-fadein");
+                divMonitorDesc.classList.add("anim-fadein");
                 divMonitorDesc.style.visibility = "visible";
+
+                iconAnglesDown.classList.remove("anim-bounce-in");
+                iconAnglesDown.classList.add("anim-bounce-in");
+                iconAnglesDown.style.visibility = "visible";
             }
         }
         else
         {
+            iconAnglesDown.style.visibility = "hidden";
             divMonitorName.style.visibility = "hidden";
             divMonitorDesc.style.visibility = "hidden";
-            divMonitorName.classList.remove("anim_typewriter");
-            divMonitorDesc.classList.remove("anim_fadein");
+
+            divMonitorName.classList.remove("anim-typewriter");
+            divMonitorDesc.classList.remove("anim-fadein");
+            iconAnglesDown.classList.remove("anim-bounce-in");
+
             showDescription = false;
         }
     }

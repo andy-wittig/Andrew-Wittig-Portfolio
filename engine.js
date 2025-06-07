@@ -184,11 +184,11 @@ async function runEngine()
 
     function updateCamera()
     {
-        const effectiveHeight = gl.canvas.clientHeight / 2;
+        const effectiveHeight = gl.canvas.height / 2;
         const fieldOfView = effectiveHeight * (.06 * Math.PI) / 180;
         const zNear = 0.1;
         const zFar = 100.0;
-        const aspect = gl.canvas.clientWidth / effectiveHeight;
+        const aspect = gl.canvas.width / effectiveHeight;
 
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
         mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
@@ -528,14 +528,29 @@ async function runEngine()
     }
 
     //Event Listener
-    gl.canvas.addEventListener('mousemove', (e) => {
+    let touchMoved = false;
+
+    gl.canvas.addEventListener("touchstart", (event) => {
         const rect = canvas.getBoundingClientRect();
-        mouseX = e.clientX - rect.left;
-        mouseY = e.clientY - rect.top;
+        mouseX = event.changedTouches[0].clientX - rect.left;
+        mouseY = event.changedTouches[0].clientY - rect.top;
+        isLeftMouseDown = true;
+    });
+    gl.canvas.addEventListener("touchmove", (event) => {
+        isLeftMouseDown = false;
+    });
+    gl.canvas.addEventListener("touchend", (event) => {
+        isLeftMouseDown = false;
     });
 
-    gl.canvas.addEventListener('mousedown', (e) => {
-        isLeftMouseDown = (e.button === 0);
+    gl.canvas.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = event.clientX - rect.left;
+        mouseY = event.clientY - rect.top;
+    });
+
+    gl.canvas.addEventListener('mousedown', (event) => {
+        isLeftMouseDown = (event.button === 0);
     });
 
     gl.canvas.addEventListener('mouseup', () => {

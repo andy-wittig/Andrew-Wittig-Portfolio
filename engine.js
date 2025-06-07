@@ -3,10 +3,10 @@ import Shader from "./shader.js"
 import Object from "./object.js"
 
 //Get WebGL Context
-const canvas = document.getElementById("demo-canvas");
+const canvas = document.getElementById("main-canvas");
 if (!canvas)
 {
-    console.log("Cannot get canvas reference.");
+    console.log("Cannot get monitor canvas reference.");
 }
 
 const gl = canvas.getContext("webgl2");
@@ -115,6 +115,16 @@ function radToDeg(rads)
     return rads * (180.0 / Math.PI);
 }
 
+function easeInOut(t)
+{
+    if (t <= 0.5)
+    {
+        return 2.0 * t * t;
+    }
+    t -= 0.5;
+    return 2.0 * t * (1.0 - t) + 0.5;
+}
+
 let deltaTime = 0;
 async function runEngine()
 {
@@ -159,40 +169,27 @@ async function runEngine()
     mMonitor2.translate([0, 0, objectPositionRadius]);
     mMonitor3.translate([0, 0, objectPositionRadius]);
 
-    //WebGL Render Settings
-    gl.clearDepth(1.0);
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.depthFunc(gl.LESS);
-
     //Camera
     let firstClick = false;
-    const fieldOfView = (60 * Math.PI) / 180;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    const cameraRadius = 10;
+
     const cameraStartRadius = 12;
     const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 2.0, (cameraStartRadius) * Math.cos(degToRad(0))];
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
-    const cameraPos = [cameraStartingPosition,
-                       cameraStartingEye,
-                       new Float32Array([0, 1, 0])]; //position, eye, up vector
+
+    const cameraRadius = 10;
+    const cameraPos = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
 
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
 
-    function resizeCanvas()
-    {
-        canvas.width = gl.canvas.clientWidth;
-        canvas.height = gl.canvas.clientHeight;
-
-        gl.viewport(0, 0, canvas.width , canvas.height);
-        setFrameBufferAttatchmentSize(canvas.width, canvas.height);
-    }
-
     function updateCamera()
     {
-        const aspect = canvas.width / canvas.height;
+        const effectiveHeight = gl.canvas.clientHeight / 2;
+        const fieldOfView = effectiveHeight * (.06 * Math.PI) / 180;
+        const zNear = 0.1;
+        const zFar = 100.0;
+        const aspect = gl.canvas.clientWidth / effectiveHeight;
+
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
         mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
     }
@@ -209,7 +206,6 @@ async function runEngine()
         const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24) >>> 0;
         //console.log("x: " + pixelX + ", y: " + pixelY + ", data:" + data[0] + "," + data[1] + "," + data[2] + "," + data[3]);
         //console.log("\n" + id);
-
         return id;
     }
 
@@ -225,16 +221,6 @@ async function runEngine()
     let startCameraAnim = false;
     let isLeftMouseDown = false;
     let animProgress = 0;
-
-    function easeInOut(t)
-    {
-        if (t <= 0.5)
-        {
-            return 2.0 * t * t;
-        }
-        t -= 0.5;
-        return 2.0 * t * (1.0 - t) + 0.5;
-    }
     
     function cameraAnimate(degree, position, radius)
     {
@@ -312,7 +298,7 @@ async function runEngine()
 
     function renderMonitorText()
     {
-        const point = [0, 0.4, 0, 1];
+        const point = [0, 1, 0, 1];
 
         var worldPosition = vec4.create();
         vec4.transformMat4(worldPosition, point, selectedObject.getModelMatrix());
@@ -326,24 +312,13 @@ async function runEngine()
         clipspace[0] /= clipspace[3];
         clipspace[1] /= clipspace[3];
 
-        var pixelTextX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.width;
-        var pixelTextY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.height;
+        var pixelTextX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
+        var pixelTextY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.clientHeight / 2; //divide by 2 since canvas styling height is 200%;
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
         divMonitorName.innerHTML = name;
         divMonitorDesc.innerHTML = desc;
-
-        const referenceHeight = 1080;
-        const baseFontSize = 24;
-        const baseElementWidth = 320;
-
-        const screenRatio = canvas.height / referenceHeight;
-        var newFontSize = baseFontSize * screenRatio;
-        var newElementWidth = baseElementWidth * screenRatio;
-
-        divMonitorElement.style.fontSize = `${newFontSize}px`;
-        divMonitorElement.style.width = `${newElementWidth}px`;
 
         divMonitorElement.style.left = Math.floor(pixelTextX - divMonitorElement.offsetWidth / 2) + "px";
         divMonitorElement.style.top = Math.floor(pixelTextY) + "px";
@@ -409,14 +384,29 @@ async function runEngine()
         deltaTime = time - prevTime;
         prevTime = time;
 
+        //WebGL Render Settings
+        gl.clearDepth(1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.SCISSOR_TEST);
+        gl.depthFunc(gl.LESS);
+
+        resizeCanvasToDisplaySize(gl.canvas);
         updateCamera();
+        setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        
         if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
 
-        //Render Picking Buffer
+        //Render Monitor Canvas
+        const halfHeight = gl.canvas.height / 2 | 0;
+        gl.viewport(0, halfHeight, gl.canvas.width, gl.canvas.height - halfHeight);
+        gl.scissor(0, halfHeight, gl.canvas.width, gl.canvas.height - halfHeight);
+        
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
         gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         
         mPickingShader.enableShader();
 
@@ -469,15 +459,75 @@ async function runEngine()
         //Monitor Text Rendering
         renderMonitorText();
 
+        //Render Clipboard Canvas
+        gl.viewport(0, 0, gl.canvas.width, halfHeight);
+        gl.scissor(0, 0, gl.canvas.width, halfHeight);
+        gl.clearColor(0, 0, 1, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
         requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
 
-    //Event Listeners
+    //Canvas Resizing
+    const canvasToDisplaySizeMap = new Map([[canvas, [300, 150]]]);
 
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+    function onResize(entries)
+    {
+        for (const entry of entries)
+        {
+            let width;
+            let height;
+            let dpr = window.devicePixelRatio;
 
+            if (entry.devicePixelContentBoxSize)
+            {
+                width = entry.devicePixelContentBoxSize[0].inlineSize;
+                height = entry.devicePixelContentBoxSize[0].blockSize;
+                dpr = 1;
+            } 
+            else if (entry.contentBoxSize)
+            {
+                if (entry.contentBoxSize[0])
+                {
+                    width = entry.contentBoxSize[0].inlineSize;
+                    height = entry.contentBoxSize[0].blockSize;
+                } 
+                else
+                {
+                    width = entry.contentBoxSize.inlineSize;
+                    height = entry.contentBoxSize.blockSize;
+                }
+            } 
+            else
+            {
+                width = entry.contentRect.width;
+                height = entry.contentRect.height;
+            }
+            const displayWidth = Math.round(width * dpr);
+            const displayHeight = Math.round(height * dpr);
+            canvasToDisplaySizeMap.set(entry.target, [displayWidth, displayHeight]);
+        }
+    }
+
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(canvas, {box: "content-box"});
+
+    function resizeCanvasToDisplaySize(canvas)
+    {
+        const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas);
+
+        const needResize = canvas.width !== displayWidth || canvas.height !== displayHeight;
+        if (needResize)
+        {
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+        }
+
+        return needResize;
+    }
+
+    //Event Listener
     gl.canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;

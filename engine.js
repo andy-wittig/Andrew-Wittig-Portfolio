@@ -230,11 +230,10 @@ async function runEngine()
     
     function cameraAnimate(degree, position, radius)
     {
-        const animDuration = 3;
+        let animDuration = 3;
         animProgress += deltaTime / animDuration;
         animProgress = Math.min(animProgress, 1);
-
-        const easedProgress = easeInOut(animProgress);
+        let easedProgress = easeInOut(animProgress);
 
         animStepRotation = animStartRotation + (degree - animStartRotation) * easedProgress;
         animStepRadius = animStartRadius + (radius - animStartRadius) * easedProgress;
@@ -249,10 +248,26 @@ async function runEngine()
         cameraView[1][1] = animStepPosition[1];
         cameraView[1][2] = animStepPosition[2];
 
-        if (animProgress == 1) 
-        {
-            startCameraAnim = false;
-        }
+        if (animProgress == 1) { startCameraAnim = false; }
+    }
+
+    let clipboardAnimProgress = 0;
+    let startClipboardAnim = false;
+
+    function clipboardAnimate(clipboardObject, startPos, endPos)
+    {
+        const animDuration = 2;
+        clipboardAnimProgress += deltaTime / animDuration;
+        clipboardAnimProgress = Math.min(clipboardAnimProgress, 1);
+        let easedProgress = easeInOut(clipboardAnimProgress);
+
+        const animX = startPos[0] + (endPos[0] - startPos[0]) * easedProgress;
+        const animY = startPos[1] + (endPos[1] - startPos[1]) * easedProgress;
+        const animZ = startPos[2] + (endPos[2] - startPos[2]) * easedProgress;
+
+        clipboardObject.setPosition([animX, animY, animZ]);
+
+        if (clipboardAnimProgress == 1) { startClipboardAnim = false; }
     }
 
     function renderObjectPicking(shader, object, id)
@@ -383,6 +398,7 @@ async function runEngine()
     let mouseX = -1;
     let mouseY = -1;
     let prevTime = 0;
+    let slideIn = false;
     
     function update(time) 
     {
@@ -481,6 +497,24 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mClipBoard.getModelMatrix());
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         mClipBoard.render(mShader);
+
+        if (!startClipboardAnim) 
+        {
+            clipboardAnimProgress = 0;
+            startClipboardAnim = true;
+            slideIn = !slideIn;
+        }
+        else
+        {
+            if (!slideIn)
+            {
+                clipboardAnimate(mClipBoard, [0, 0, 0], [3, 0, 0]);
+            }
+            else
+            {
+                clipboardAnimate(mClipBoard, [-3, 0, 0], [0, 0, 0]); 
+            }
+        }
 
         requestAnimationFrame(update);
     }

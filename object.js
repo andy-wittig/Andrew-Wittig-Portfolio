@@ -191,6 +191,12 @@ export default class Object
         return rotationQuat;
     }
 
+    setPosition(newPos)
+    {
+        mat4.identity(this.modelMatrix);
+        this.translate(newPos);
+    }
+
     getPosition()
     {
         const positionVec = vec3.create();

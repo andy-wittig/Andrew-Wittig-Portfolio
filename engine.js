@@ -57,6 +57,7 @@ const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", nu
 const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", null, "Textures/clipboard_normal.png");
+const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", null, "Textures/wood_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -152,6 +153,7 @@ async function runEngine()
     await mMonitor2.Initialize();
     await mMonitor3.Initialize();
     await mClipBoard.Initialize();
+    await mDesk.Initialize();
 
     mMonitor.setID(assignUniqueID());
     mMonitor2.setID(assignUniqueID());
@@ -186,6 +188,8 @@ async function runEngine()
     mMonitor2.translate([0, 0, objectPositionRadius]);
     mMonitor3.translate([0, 0, objectPositionRadius]);
 
+    let heightRatio = 1;
+
     //Monitor Camera
     let firstClick = false;
 
@@ -200,16 +204,23 @@ async function runEngine()
     const viewMatrix = mat4.create();
 
     //Clipboard Camera
-    const camera2Fov = 40;
-    const cameraView2 = [[0, 2, 1], [0, 0, 0], [0, 1, 0]];
+    const camera2Fov = 70;
+    const cameraView2 = [[0, 1.6, 3.0], [0, .3, .8], [0, 1, 0]];
+    const clipboardStartingPos = [0, 1, 2];
+    const clipboardSlideLeftPos = [-4, 1, 2];
+    const clipboardSlideRightPos = [4, 1, 2];
+    mClipBoard.setPosition(clipboardStartingPos);
 
     function updateCamera(position, fov)
     {
+        const referenceHeight = screen.height;
         const effectiveHeight = gl.canvas.height / 2;
-        const fieldOfView = (effectiveHeight * (fov * .001) * Math.PI) / 180;
+        heightRatio = (effectiveHeight / referenceHeight);
+        const fieldOfView = ((heightRatio * fov) * Math.PI) / 180;
         const zNear = 0.1;
         const zFar = 100.0;
         const aspect = gl.canvas.width / effectiveHeight;
+        console.log(heightRatio);
 
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
         mat4.lookAt(viewMatrix, position[0], position[1], position[2]);
@@ -276,23 +287,23 @@ async function runEngine()
 
         if (!slideIn && !flipSlide)
         {
-            startPos = [0, 0, 0];
-            endPos = [-6, 0, 0];
+            startPos = clipboardStartingPos;
+            endPos = clipboardSlideLeftPos;
         }
         else if (!slideIn && flipSlide)
         {
-            startPos = [6, 0, 0];
-            endPos = [0, 0, 0];
+            startPos = clipboardSlideRightPos;
+            endPos = clipboardStartingPos;
         }
         else if (slideIn && !flipSlide)
         {
-            startPos = [0, 0, 0];
-            endPos = [6, 0, 0];
+            startPos = clipboardStartingPos;
+            endPos = clipboardSlideRightPos;
         }
         else if (slideIn && flipSlide)
         {
-            startPos = [-6, 0, 0];
-            endPos = [0, 0, 0];
+            startPos = clipboardSlideLeftPos;
+            endPos = clipboardStartingPos;
         }
 
         const animDuration = 3;
@@ -386,7 +397,7 @@ async function runEngine()
 
     function renderMonitorText()
     {
-        let pixelTextCoords = getScreenPosFromObject([0, 1, 0, 1], selectedObject);
+        let pixelTextCoords = getScreenPosFromObject([0, 0.8, 0, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
@@ -395,6 +406,8 @@ async function runEngine()
 
         divMonitorElement.style.left = Math.floor(pixelTextCoords[0] - divMonitorElement.offsetWidth / 2) + "px";
         divMonitorElement.style.top = Math.floor(pixelTextCoords[1]) + "px";
+        divMonitorElement.style.width = 28 * (1 / heightRatio) + "vh";
+        divMonitorElement.style.height = 18 * (1 / heightRatio) + "vh";
 
         if (startCameraAnim == false && firstClick) 
         {
@@ -467,7 +480,6 @@ async function runEngine()
 
         resizeCanvasToDisplaySize(gl.canvas);
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         
         if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
 
@@ -550,6 +562,9 @@ async function runEngine()
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         mClipBoard.render(mShader);
 
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mDesk.getModelMatrix());
+        mDesk.render(mShader);
+
         clipboardLeftButton.addEventListener("click", clipboardLeftClick);
         clipboardRightButton.addEventListener("click", clipboardRightClick);
 
@@ -557,17 +572,20 @@ async function runEngine()
         {
             if (!startClipboardAnim) 
             {
+                clipboardLeftButton.classList.remove("anim-fadeout-in");
+                clipboardLeftButton.classList.add("anim-fadeout-in");
                 clipboardAnimProgress = 0;
                 startClipboardAnim = true;
                 slideIn = false; //when false the clipboard slides out to the left
                 flipSlide = false;
             }
         }
-
         function clipboardRightClick()
         {
             if (!startClipboardAnim) 
             {
+                clipboardRightButton.classList.remove("anim-fadeout-in");
+                clipboardRightButton.classList.add("anim-fadeout-in");
                 clipboardAnimProgress = 0;
                 startClipboardAnim = true;
                 slideIn = true;

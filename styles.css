@@ -82,11 +82,50 @@ h2
 {
     visibility: hidden;
     position: absolute;
-    font-size: 60px !important;
+    font-size: 72px !important;
     color: white;
     text-align: center;
     width: 100%;
     bottom: 5%;
+}
+
+.fa-chevron-left
+{
+    font-size: 60px !important;
+    color: white;
+}
+
+.fa-chevron-right
+{
+    font-size: 60px !important;
+    color: white;
+}
+
+.left-btn, .right-btn
+{
+    position: absolute;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    background-color: transparent;
+    padding: 40px;
+}
+
+.left-btn
+{
+    left: 25%;
+    top: 150%;  
+}
+
+.right-btn
+{
+    right: 25%;
+    top: 150%;
+}
+
+.left-btn:hover, .right-btn:hover
+{
+    opacity: .8;
 }
 
 .anim-bounce-in

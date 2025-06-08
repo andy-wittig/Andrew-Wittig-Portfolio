@@ -16,12 +16,21 @@ if (!gl)
 }
 export default gl;
 
-//Monitor Text HTML Integration
+//HTML Integration
 const divContainerElement = document.getElementById("container");
 const divOverlayElement = document.getElementById("overlay");
 
+const clipboardLeftButton = document.createElement("button");
+clipboardLeftButton.className = "left-btn";
+const clipboardRightButton = document.createElement("button");
+clipboardRightButton.className = "right-btn";
+
 const iconAnglesDown = document.createElement("i");
 iconAnglesDown.className = "fa fa-angle-double-down";
+const iconChevronLeft = document.createElement("i");
+iconChevronLeft.className = "fa fa-chevron-left";
+const iconChevronRight = document.createElement("i");
+iconChevronRight.className = "fa fa-chevron-right";
 
 const divMonitorElement = document.createElement("div");
 const divMonitorName = document.createElement("div");
@@ -29,6 +38,12 @@ const divMonitorDesc = document.createElement("div");
 divMonitorElement.className = "floating-div";
 
 divContainerElement.append(iconAnglesDown);
+
+clipboardLeftButton.append(iconChevronLeft);
+clipboardRightButton.append(iconChevronRight);
+divContainerElement.append(clipboardLeftButton);
+divContainerElement.append(clipboardRightButton);
+
 divMonitorElement.append(divMonitorName);
 divMonitorElement.append(divMonitorDesc);
 divOverlayElement.append(divMonitorElement);
@@ -191,7 +206,7 @@ async function runEngine()
     function updateCamera(position, fov)
     {
         const effectiveHeight = gl.canvas.height / 2;
-        const fieldOfView = effectiveHeight * ((fov * .001) * Math.PI) / 180;
+        const fieldOfView = (effectiveHeight * (fov * .001) * Math.PI) / 180;
         const zNear = 0.1;
         const zFar = 100.0;
         const aspect = gl.canvas.width / effectiveHeight;
@@ -253,10 +268,34 @@ async function runEngine()
 
     let clipboardAnimProgress = 0;
     let startClipboardAnim = false;
+    let flipSlide = false;
 
-    function clipboardAnimate(clipboardObject, startPos, endPos)
+    function clipboardAnimate(clipboardObject)
     {
-        const animDuration = 2;
+        let startPos, endPos;
+
+        if (!slideIn && !flipSlide)
+        {
+            startPos = [0, 0, 0];
+            endPos = [-6, 0, 0];
+        }
+        else if (!slideIn && flipSlide)
+        {
+            startPos = [6, 0, 0];
+            endPos = [0, 0, 0];
+        }
+        else if (slideIn && !flipSlide)
+        {
+            startPos = [0, 0, 0];
+            endPos = [6, 0, 0];
+        }
+        else if (slideIn && flipSlide)
+        {
+            startPos = [-6, 0, 0];
+            endPos = [0, 0, 0];
+        }
+
+        const animDuration = 3;
         clipboardAnimProgress += deltaTime / animDuration;
         clipboardAnimProgress = Math.min(clipboardAnimProgress, 1);
         let easedProgress = easeInOut(clipboardAnimProgress);
@@ -267,7 +306,15 @@ async function runEngine()
 
         clipboardObject.setPosition([animX, animY, animZ]);
 
-        if (clipboardAnimProgress == 1) { startClipboardAnim = false; }
+        if (clipboardAnimProgress >= 0.5 && !flipSlide)
+        {
+            flipSlide = true;
+        }
+
+        if (clipboardAnimProgress == 1) 
+        { 
+            startClipboardAnim = false; 
+        }
     }
 
     function renderObjectPicking(shader, object, id)
@@ -315,14 +362,10 @@ async function runEngine()
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
     }
 
-    let showDescription = false;
-
-    function renderMonitorText()
+    function getScreenPosFromObject(point, object)
     {
-        const point = [0, 1, 0, 1];
-
         var worldPosition = vec4.create();
-        vec4.transformMat4(worldPosition, point, selectedObject.getModelMatrix());
+        vec4.transformMat4(worldPosition, point, object.getModelMatrix());
 
         var viewProjectionMatrix = mat4.create();
         mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
@@ -333,16 +376,25 @@ async function runEngine()
         clipspace[0] /= clipspace[3];
         clipspace[1] /= clipspace[3];
 
-        var pixelTextX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
-        var pixelTextY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.clientHeight / 2; //divide by 2 since canvas styling height is 200%;
+        var screenX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
+        var screenY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.clientHeight / 2; //divide by 2 since canvas styling height is 200%;
+
+        return [screenX, screenY];
+    }
+
+    let showDescription = false;
+
+    function renderMonitorText()
+    {
+        let pixelTextCoords = getScreenPosFromObject([0, 1, 0, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
         divMonitorName.innerHTML = name;
         divMonitorDesc.innerHTML = desc;
 
-        divMonitorElement.style.left = Math.floor(pixelTextX - divMonitorElement.offsetWidth / 2) + "px";
-        divMonitorElement.style.top = Math.floor(pixelTextY) + "px";
+        divMonitorElement.style.left = Math.floor(pixelTextCoords[0] - divMonitorElement.offsetWidth / 2) + "px";
+        divMonitorElement.style.top = Math.floor(pixelTextCoords[1]) + "px";
 
         if (startCameraAnim == false && firstClick) 
         {
@@ -498,22 +550,34 @@ async function runEngine()
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         mClipBoard.render(mShader);
 
-        if (!startClipboardAnim) 
+        clipboardLeftButton.addEventListener("click", clipboardLeftClick);
+        clipboardRightButton.addEventListener("click", clipboardRightClick);
+
+        function clipboardLeftClick()
         {
-            clipboardAnimProgress = 0;
-            startClipboardAnim = true;
-            slideIn = !slideIn;
+            if (!startClipboardAnim) 
+            {
+                clipboardAnimProgress = 0;
+                startClipboardAnim = true;
+                slideIn = false; //when false the clipboard slides out to the left
+                flipSlide = false;
+            }
         }
-        else
+
+        function clipboardRightClick()
         {
-            if (!slideIn)
+            if (!startClipboardAnim) 
             {
-                clipboardAnimate(mClipBoard, [0, 0, 0], [3, 0, 0]);
+                clipboardAnimProgress = 0;
+                startClipboardAnim = true;
+                slideIn = true;
+                flipSlide = false;
             }
-            else
-            {
-                clipboardAnimate(mClipBoard, [-3, 0, 0], [0, 0, 0]); 
-            }
+        }
+
+        if (startClipboardAnim) 
+        {
+            clipboardAnimate(mClipBoard);
         }
 
         requestAnimationFrame(update);

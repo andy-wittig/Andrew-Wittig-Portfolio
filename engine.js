@@ -59,6 +59,7 @@ const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", n
 const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", null, "Textures/clipboard_normal.png");
 const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", null, "Textures/wood_normal.png");
 const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", null, "Textures/mug_normal.png");
+const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", null, "Textures/pen_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -156,6 +157,7 @@ async function runEngine()
     await mClipBoard.Initialize();
     await mDesk.Initialize();
     await mMug.Initialize();
+    await mPen.Initialize();
 
     mMonitor.setID(assignUniqueID());
     mMonitor2.setID(assignUniqueID());
@@ -275,11 +277,14 @@ async function runEngine()
         if (animProgress == 1) { startCameraAnim = false; }
     }
 
+    mMug.setPosition([1.8, .2, -.2]);
+    mPen.setPosition([1.5, 0, .4]);
+    mPen.rotate(degToRad(10), [0, 1, 0]);
+
     const clipboardStartingPos = [0, 1, 2];
     const clipboardSlideLeftPos = [-4, 1, 2];
     const clipboardSlideRightPos = [4, 1, 2];
     mClipBoard.setPosition(clipboardStartingPos);
-    mMug.setPosition([2, .2, 0]);
 
     let clipboardAnimProgress = 0;
     let startClipboardAnim = false;
@@ -329,6 +334,31 @@ async function runEngine()
         if (clipboardAnimProgress == 1) 
         { 
             startClipboardAnim = false; 
+        }
+    }
+
+    function clipboardLeftClick()
+    {
+        if (!startClipboardAnim) 
+        {
+            clipboardLeftButton.classList.remove("anim-fadeout-in");
+            clipboardLeftButton.classList.add("anim-fadeout-in");
+            clipboardAnimProgress = 0;
+            startClipboardAnim = true;
+            slideIn = false; //when false the clipboard slides out to the left
+            flipSlide = false;
+        }
+    }
+    function clipboardRightClick()
+    {
+        if (!startClipboardAnim) 
+        {
+            clipboardRightButton.classList.remove("anim-fadeout-in");
+            clipboardRightButton.classList.add("anim-fadeout-in");
+            clipboardAnimProgress = 0;
+            startClipboardAnim = true;
+            slideIn = true;
+            flipSlide = false;
         }
     }
 
@@ -575,33 +605,9 @@ async function runEngine()
         gl.uniform1f(mShader.getUniformLocation("material.shininess"), 100.0);
         mMug.render(mShader);
 
-        clipboardLeftButton.addEventListener("click", clipboardLeftClick);
-        clipboardRightButton.addEventListener("click", clipboardRightClick);
-
-        function clipboardLeftClick()
-        {
-            if (!startClipboardAnim) 
-            {
-                clipboardLeftButton.classList.remove("anim-fadeout-in");
-                clipboardLeftButton.classList.add("anim-fadeout-in");
-                clipboardAnimProgress = 0;
-                startClipboardAnim = true;
-                slideIn = false; //when false the clipboard slides out to the left
-                flipSlide = false;
-            }
-        }
-        function clipboardRightClick()
-        {
-            if (!startClipboardAnim) 
-            {
-                clipboardRightButton.classList.remove("anim-fadeout-in");
-                clipboardRightButton.classList.add("anim-fadeout-in");
-                clipboardAnimProgress = 0;
-                startClipboardAnim = true;
-                slideIn = true;
-                flipSlide = false;
-            }
-        }
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPen.getModelMatrix());
+        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 60.0);
+        mPen.render(mShader);
 
         if (startClipboardAnim) 
         {
@@ -708,6 +714,9 @@ async function runEngine()
     divMonitorName.addEventListener('animationend', (event) => {
         showDescription = true;
     });
+
+    clipboardLeftButton.addEventListener("click", clipboardLeftClick);
+    clipboardRightButton.addEventListener("click", clipboardRightClick);
 }
 
 try

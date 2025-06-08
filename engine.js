@@ -58,6 +58,7 @@ const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", n
 const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", null, "Textures/clipboard_normal.png");
 const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", null, "Textures/wood_normal.png");
+const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", null, "Textures/mug_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -154,6 +155,7 @@ async function runEngine()
     await mMonitor3.Initialize();
     await mClipBoard.Initialize();
     await mDesk.Initialize();
+    await mMug.Initialize();
 
     mMonitor.setID(assignUniqueID());
     mMonitor2.setID(assignUniqueID());
@@ -206,10 +208,6 @@ async function runEngine()
     //Clipboard Camera
     const camera2Fov = 70;
     const cameraView2 = [[0, 1.6, 3.0], [0, .3, .8], [0, 1, 0]];
-    const clipboardStartingPos = [0, 1, 2];
-    const clipboardSlideLeftPos = [-4, 1, 2];
-    const clipboardSlideRightPos = [4, 1, 2];
-    mClipBoard.setPosition(clipboardStartingPos);
 
     function updateCamera(position, fov)
     {
@@ -276,6 +274,12 @@ async function runEngine()
 
         if (animProgress == 1) { startCameraAnim = false; }
     }
+
+    const clipboardStartingPos = [0, 1, 2];
+    const clipboardSlideLeftPos = [-4, 1, 2];
+    const clipboardSlideRightPos = [4, 1, 2];
+    mClipBoard.setPosition(clipboardStartingPos);
+    mMug.setPosition([2, .2, 0]);
 
     let clipboardAnimProgress = 0;
     let startClipboardAnim = false;
@@ -553,6 +557,7 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         updateCamera(cameraView2, camera2Fov);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -.6, -1]);
         gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
@@ -563,7 +568,12 @@ async function runEngine()
         mClipBoard.render(mShader);
 
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mDesk.getModelMatrix());
+        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 60.0);
         mDesk.render(mShader);
+
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mMug.getModelMatrix());
+        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 100.0);
+        mMug.render(mShader);
 
         clipboardLeftButton.addEventListener("click", clipboardLeftClick);
         clipboardRightButton.addEventListener("click", clipboardRightClick);
@@ -596,6 +606,11 @@ async function runEngine()
         if (startClipboardAnim) 
         {
             clipboardAnimate(mClipBoard);
+        }
+        else
+        {
+            clipboardLeftButton.classList.remove("anim-fadeout-in");
+            clipboardRightButton.classList.remove("anim-fadeout-in");
         }
 
         requestAnimationFrame(update);

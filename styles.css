@@ -51,19 +51,28 @@ h1
     font-size: 4vw;
     font-weight: 100;
     font-family: "Cascadia Code", monospace;
+    animation: anim-bolden 6s infinite;
+    animation-direction: alternate;
+    animation-delay: 5s;
+}
+
+@keyframes anim-bolden
+{
+    from { letter-spacing: normal; }
+    to { letter-spacing: 6px; }
 }
 
 h2
 {
     color: white;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-weight: 300;
     font-family: "Cascadia Code", monospace;
 }
 
 .fa-github, .fa-envelope
 {
-    font-size: 2vw;
+    font-size: 1.5vw;
 }
 
 @media (max-width: 1024px)
@@ -82,22 +91,16 @@ h2
 {
     visibility: hidden;
     position: absolute;
-    font-size: 72px !important;
+    font-size: 4vw !important;
     color: white;
     text-align: center;
     width: 100%;
     bottom: 5%;
 }
 
-.fa-chevron-left
+.fa-chevron-left, .fa-chevron-right
 {
-    font-size: 60px !important;
-    color: white;
-}
-
-.fa-chevron-right
-{
-    font-size: 60px !important;
+    font-size: 4vw !important;
     color: white;
 }
 
@@ -174,6 +177,19 @@ h2
 {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+.anim-fadeout-in
+{
+    animation: fadeout-in 3s;
+}
+
+@keyframes fadeout-in
+{
+    0% { opacity: 1; }
+    20% { opacity: 0; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 @keyframes typewriter

@@ -41,6 +41,7 @@ const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Sha
 const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
 const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
+const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", null, "Textures/clipboard_normal.png");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -134,7 +135,8 @@ async function runEngine()
 
     await mMonitor.Initialize();
     await mMonitor2.Initialize();
-    await mMonitor3.Initialize();    
+    await mMonitor3.Initialize();
+    await mClipBoard.Initialize();
 
     mMonitor.setID(assignUniqueID());
     mMonitor2.setID(assignUniqueID());
@@ -169,29 +171,33 @@ async function runEngine()
     mMonitor2.translate([0, 0, objectPositionRadius]);
     mMonitor3.translate([0, 0, objectPositionRadius]);
 
-    //Camera
+    //Monitor Camera
     let firstClick = false;
 
     const cameraStartRadius = 12;
     const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 2.0, (cameraStartRadius) * Math.cos(degToRad(0))];
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
-
+    const cameraFov = 60;
     const cameraRadius = 10;
-    const cameraPos = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
+    const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
 
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
 
-    function updateCamera()
+    //Clipboard Camera
+    const camera2Fov = 40;
+    const cameraView2 = [[0, 2, 1], [0, 0, 0], [0, 1, 0]];
+
+    function updateCamera(position, fov)
     {
         const effectiveHeight = gl.canvas.height / 2;
-        const fieldOfView = effectiveHeight * (.06 * Math.PI) / 180;
+        const fieldOfView = effectiveHeight * ((fov * .001) * Math.PI) / 180;
         const zNear = 0.1;
         const zFar = 100.0;
         const aspect = gl.canvas.width / effectiveHeight;
 
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-        mat4.lookAt(viewMatrix, cameraPos[0], cameraPos[1], cameraPos[2]);
+        mat4.lookAt(viewMatrix, position[0], position[1], position[2]);
     }
 
     var selectedObject = mMonitor;
@@ -236,12 +242,12 @@ async function runEngine()
         animStepPosition[1] = animStartPosition[1] + (position[1] - animStartPosition[1]) * easedProgress;
         animStepPosition[2] = animStartPosition[2] + (position[2] - animStartPosition[2]) * easedProgress;
 
-        cameraPos[0][0] = animStepRadius * Math.sin(degToRad(animStepRotation));
-        cameraPos[0][1] = 2.0;
-        cameraPos[0][2] = animStepRadius * Math.cos(degToRad(animStepRotation));
-        cameraPos[1][0] = animStepPosition[0];
-        cameraPos[1][1] = animStepPosition[1];
-        cameraPos[1][2] = animStepPosition[2];
+        cameraView[0][0] = animStepRadius * Math.sin(degToRad(animStepRotation));
+        cameraView[0][1] = 2.0;
+        cameraView[0][2] = animStepRadius * Math.cos(degToRad(animStepRotation));
+        cameraView[1][0] = animStepPosition[0];
+        cameraView[1][1] = animStepPosition[1];
+        cameraView[1][2] = animStepPosition[2];
 
         if (animProgress == 1) 
         {
@@ -392,13 +398,14 @@ async function runEngine()
         gl.depthFunc(gl.LESS);
 
         resizeCanvasToDisplaySize(gl.canvas);
-        updateCamera();
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         
         if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
 
         //Render Monitor Canvas
+        updateCamera(cameraView, cameraFov);
+
         const halfHeight = gl.canvas.height / 2 | 0;
         gl.viewport(0, halfHeight, gl.canvas.width, gl.canvas.height - halfHeight);
         gl.scissor(0, halfHeight, gl.canvas.width, gl.canvas.height - halfHeight);
@@ -433,12 +440,12 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -1, -1]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.08, .08, .08]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [.6, .6, .6]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.4, .4, .4]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -1, -.6]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.12, .12, .10]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
+        gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.5, .5, .5]);
         
-        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraPos[0]);
+        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
         gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
@@ -462,8 +469,18 @@ async function runEngine()
         //Render Clipboard Canvas
         gl.viewport(0, 0, gl.canvas.width, halfHeight);
         gl.scissor(0, 0, gl.canvas.width, halfHeight);
-        gl.clearColor(0, 0, 1, 0);
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+        updateCamera(cameraView2, camera2Fov);
+        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraView2[0]);
+        gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
+        gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
+
+        mShader.enableShader();
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mClipBoard.getModelMatrix());
+        gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
+        mClipBoard.render(mShader);
 
         requestAnimationFrame(update);
     }

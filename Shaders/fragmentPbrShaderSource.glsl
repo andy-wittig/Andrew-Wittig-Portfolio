@@ -12,8 +12,8 @@ uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 
-uniform vec3 lightPositions[1];
-uniform vec3 lightColors[1];
+uniform vec3 lightPositions[2];
+uniform vec3 lightColors[2];
 
 uniform vec3 camPos;
 uniform vec3 colorMultiplier;
@@ -59,7 +59,7 @@ float GeometrySchilickGGX(float NdotV, float roughness)
     float nom = NdotV;
     float denom = NdotV * (1.0 - k) + k;
 
-    return nom /denom;
+    return nom / denom;
 }
 
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
@@ -91,7 +91,7 @@ void main()
     F0 = mix(F0, albedo, metallic);
 
     vec3 Lo = vec3(0.0);
-    for (int i = 0; i < 1; i++) //number of lights
+    for (int i = 0; i < 2; i++) //number of lights
     {
         vec3 L = normalize(lightPositions[i] - WorldPos);
         vec3 H = normalize(V + L);
@@ -124,4 +124,3 @@ void main()
 
     FragColor = vec4(color * colorMultiplier, 1.0);
 }
-

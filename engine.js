@@ -57,8 +57,8 @@ const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "T
 const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", null, null, null);
 const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", null, null, null);
 const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", null);
-const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/wood_roughness.png", null);
-const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", "Textures/mug_normal.png", null, null, null);
+const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
+const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", "Textures/mug_normal.png", null, "Textures/mug_roughness.png", null);
 const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 
 //Custom Frame Buffers
@@ -555,8 +555,10 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), cameraView[0]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [25, 25, 25]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [20, 20, 20]);
         
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
@@ -585,13 +587,16 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         updateCamera(cameraView2, camera2Fov);
-        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [1, 1.2, 2.6]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [1, 1, 1]);
+
+        mShader.enableShader();
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 1.5, -.5]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
-        mShader.enableShader();
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mClipBoard.getModelMatrix());
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mClipBoard.getModelMatrix()))));
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);

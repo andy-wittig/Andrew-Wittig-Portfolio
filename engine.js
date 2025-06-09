@@ -53,12 +53,12 @@ const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragme
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 
 //Objects
-const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", "Textures/tv_diffuse.png", "Textures/tv_diffuse.png", "Textures/tv_diffuse.png");
-const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", null, null, null);
-const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", null, null, null);
+const mMonitor = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
+const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
+const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
 const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", null);
 const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
-const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", "Textures/mug_normal.png", null, "Textures/mug_roughness.png", null);
+const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", null, "Textures/Mug/roughness.png", null);
 const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 
 //Custom Frame Buffers
@@ -220,7 +220,6 @@ async function runEngine()
         const zNear = 0.1;
         const zFar = 100.0;
         const aspect = gl.canvas.width / effectiveHeight;
-        console.log(heightRatio);
 
         mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
         mat4.lookAt(viewMatrix, position[0], position[1], position[2]);
@@ -558,7 +557,7 @@ async function runEngine()
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [20, 20, 20]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [50, 50, 50]);
         
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);

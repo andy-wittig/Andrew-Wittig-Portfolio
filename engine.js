@@ -49,17 +49,17 @@ divMonitorElement.append(divMonitorDesc);
 divOverlayElement.append(divMonitorElement);
 
 //Shaders
-const mShader = new Shader("Shaders/vertexLightingShaderSource.glsl", "Shaders/fragmentLightingShaderSource.glsl");
+const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 
 //Objects
-const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
-const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
-const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", null, "Textures/tv_normal.png");
-const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", null, "Textures/clipboard_normal.png");
-const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", null, "Textures/wood_normal.png");
-const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", null, "Textures/mug_normal.png");
-const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", null, "Textures/pen_normal.png");
+const mMonitor = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", "Textures/tv_diffuse.png", "Textures/tv_diffuse.png", "Textures/tv_diffuse.png");
+const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", null, null, null);
+const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/tv_diffuse.png", "Textures/tv_normal.png", null, null, null);
+const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", null);
+const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/wood_roughness.png", null);
+const mMug = new Object("Models/mug.obj", "Textures/mug_diffuse.png", "Textures/mug_normal.png", null, null, null);
+const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -403,6 +403,7 @@ async function runEngine()
             //gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [objectID[0], objectID[1], objectID[2]]); debugging
         }
         gl.uniformMatrix4fv(shader.getUniformLocation("modelMatrix"), false, object.getModelMatrix());
+        gl.uniformMatrix3fv(shader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), object.getModelMatrix()))));
         object.render(shader);
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
     }
@@ -554,16 +555,13 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -1, -.6]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.ambient"), [.12, .12, .10]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.diffuse"), [1, 1, 1]);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.specular"), [.5, .5, .5]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), cameraView[0]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [25, 25, 25]);
         
-        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraView[0]);
+        gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
-        gl.uniform1f(mShader.getUniformLocation("material.alpha"), 1.0);
-        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 40.0);
+
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
         renderObjectPicking(mShader, mMonitor, pickID);
@@ -587,26 +585,28 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         updateCamera(cameraView2, camera2Fov);
-        gl.uniform3fv(mShader.getUniformLocation("mDirLight.direction"), [0, -.6, -1]);
-        gl.uniform3fv(mShader.getUniformLocation("viewPos"), cameraView2[0]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [1, 1.2, 2.6]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [1, 1, 1]);
+        gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
         mShader.enableShader();
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mClipBoard.getModelMatrix());
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mClipBoard.getModelMatrix()))));
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         mClipBoard.render(mShader);
 
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mDesk.getModelMatrix());
-        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 60.0);
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mDesk.getModelMatrix()))));
         mDesk.render(mShader);
 
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mMug.getModelMatrix());
-        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 100.0);
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mMug.getModelMatrix()))));
         mMug.render(mShader);
 
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPen.getModelMatrix());
-        gl.uniform1f(mShader.getUniformLocation("material.shininess"), 60.0);
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPen.getModelMatrix()))));
         mPen.render(mShader);
 
         if (startClipboardAnim) 

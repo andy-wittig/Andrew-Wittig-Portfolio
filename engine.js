@@ -14,7 +14,18 @@ if (!gl)
 {
     console.log("This browser doesn't support WebGL 2.");
 }
+
 export default gl;
+
+function degToRad(degrees)
+{
+    return (degrees * Math.PI) / 180.0;
+}
+
+function radToDeg(rads)
+{
+    return rads * (180.0 / Math.PI);
+}
 
 //HTML Integration
 const divContainerElement = document.getElementById("container");
@@ -51,6 +62,8 @@ divOverlayElement.append(divMonitorElement);
 //Shaders
 const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
+const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
+const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 
 //Objects
 const mMonitor = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
@@ -60,6 +73,7 @@ const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffus
 const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
 const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", null, "Textures/Mug/roughness.png", null);
 const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
+const mCube = new Object("Models/cube.obj");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -86,6 +100,82 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, 0);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+//PBR framebuffer ------------
+gl.enable(gl.DEPTH_TEST);
+gl.depthFunc(gl.LEQUAL);
+
+var captureFBO = gl.createFramebuffer();
+var captureRBO = gl.createRenderbuffer();
+
+gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
+gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
+gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
+gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, captureRBO);
+
+//Load HDR environment map
+gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
+
+const hdrTexture = gl.createTexture();
+var hdrImage = new HDRImage();
+hdrImage.src = "HDR/sky.hdr";
+
+hdrImage.onload = () => {
+    gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, hdrImage.width, hdrImage.height, 0, gl.RGB, gl.FLOAT, hdrImage.dataRGBE); 
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+};
+
+//Setup cubemap
+const envCubemap = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+for (let i = 0; i < 6; i++)
+{
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 512, 512, 0, gl.RGBA, gl.FLOAT, null);
+}
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+//Convert HDR equirectangulr environment map to cubemap
+const captureProjection = mat4.perspective(mat4.create(), degToRad(90), 1.0, 0.1, 10.0);
+const captureViews = [
+    mat4.lookAt(mat4.create(), [0, 0, 0], [1, 0, 0], [0, -1, 0]),
+    mat4.lookAt(mat4.create(), [0, 0, 0], [-1, 0, 0], [0, -1, 0]),
+    mat4.lookAt(mat4.create(), [0, 0, 0], [0, 1, 0], [0, 0, 1]),
+    mat4.lookAt(mat4.create(), [0, 0, 0], [0, -1, 0], [0, 0, -1]),
+    mat4.lookAt(mat4.create(), [0, 0, 0], [0, 0, 1], [0, -1, 0]),
+    mat4.lookAt(mat4.create(), [0, 0, 0], [0, 0, -1], [0, -1, 0])
+];
+
+await mCube.Initialize();
+await mCubemapShader.Initialize();
+
+mCubemapShader.enableShader();
+gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
+gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("projectionMatrix"), false, captureProjection);
+gl.activeTexture(gl.TEXTURE0);
+gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
+
+gl.viewport(0, 0, 512, 512);
+gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
+for (let i = 0; i < 6; i++)
+{
+    gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    mCube.render();
+}
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 function checkDuplicate(array1, array2)
 {
@@ -124,16 +214,6 @@ function assignUniqueID()
     }
 }
 
-function degToRad(degrees)
-{
-    return (degrees * Math.PI) / 180.0;
-}
-
-function radToDeg(rads)
-{
-    return rads * (180.0 / Math.PI);
-}
-
 function easeInOut(t)
 {
     if (t <= 0.5)
@@ -150,6 +230,7 @@ async function runEngine()
     //Init
     await mShader.Initialize();
     await mPickingShader.Initialize();
+    await mSkyboxShader.Initialize();
 
     await mMonitor.Initialize();
     await mMonitor2.Initialize();
@@ -622,6 +703,15 @@ async function runEngine()
             clipboardLeftButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
         }
+
+        //Skybox
+        gl.depthFunc(gl.LEQUAL);
+        mSkyboxShader.enableShader();
+        gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
+        gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("viewMatrix"), false, viewMatrix);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+        mCube.render();
 
         requestAnimationFrame(update);
     }

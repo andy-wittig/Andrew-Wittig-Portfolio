@@ -5,8 +5,9 @@ function loadTexture(path)
 {
     if (path == null) { return 0; }
 
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
+
     const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
 
     const image = new Image();
     image.onload = () => {
@@ -95,7 +96,6 @@ export default class Object
         gl.bindVertexArray(null);
 
         //Load Textures
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
 
         this.albedo = loadTexture(this.albedoPath);
         this.normal = loadTexture(this.normalPath);

@@ -1,6 +1,8 @@
 //Imports
 import Shader from "./shader.js"
 import Object from "./object.js"
+import * as THREE from 'three';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 //Get WebGL Context
 const canvas = document.getElementById("main-canvas");
@@ -14,6 +16,8 @@ if (!gl)
 {
     console.log("This browser doesn't support WebGL 2.");
 }
+
+gl.getExtension('EXT_color_buffer_float');
 
 export default gl;
 
@@ -122,13 +126,14 @@ hdrImage.src = "HDR/sky.hdr";
 
 hdrImage.onload = () => {
     gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, hdrImage.width, hdrImage.height, 0, gl.RGB, gl.FLOAT, hdrImage.dataRGBE); 
-
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB16F, hdrImage.width, hdrImage.height, 0, gl.RGB, gl.FLOAT, hdrImage.dataFloat);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 };
+
+gl.bindTexture(gl.TEXTURE_2D, null);
 
 //Setup cubemap
 const envCubemap = gl.createTexture();
@@ -143,7 +148,7 @@ gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-//Convert HDR equirectangulr environment map to cubemap
+//Convert HDR equirectangular environment map to cubemap
 const captureProjection = mat4.perspective(mat4.create(), degToRad(90), 1.0, 0.1, 10.0);
 const captureViews = [
     mat4.lookAt(mat4.create(), [0, 0, 0], [1, 0, 0], [0, -1, 0]),
@@ -158,10 +163,10 @@ await mCube.Initialize();
 await mCubemapShader.Initialize();
 
 mCubemapShader.enableShader();
-gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
 gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("projectionMatrix"), false, captureProjection);
 gl.activeTexture(gl.TEXTURE0);
 gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
+gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
 
 gl.viewport(0, 0, 512, 512);
 gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
@@ -169,7 +174,6 @@ for (let i = 0; i < 6; i++)
 {
     gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -660,6 +664,25 @@ async function runEngine()
         //Monitor Text Rendering
         renderMonitorText();
 
+        //Skybox
+        gl.depthFunc(gl.LEQUAL);
+        gl.disable(gl.CULL_FACE);
+
+        mSkyboxShader.enableShader();
+        gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
+        gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("viewMatrix"), false, viewMatrix);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+        gl.uniform1i(mSkyboxShader.getUniformLocation("environmentMap"), 0);
+        mCube.render();
+
+        //WebGL Render Settings
+        gl.clearDepth(1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.SCISSOR_TEST);
+        gl.depthFunc(gl.LESS);
+
         //Render Clipboard Canvas
         gl.viewport(0, 0, gl.canvas.width, halfHeight);
         gl.scissor(0, 0, gl.canvas.width, halfHeight);
@@ -706,11 +729,14 @@ async function runEngine()
 
         //Skybox
         gl.depthFunc(gl.LEQUAL);
+        gl.disable(gl.CULL_FACE);
+
         mSkyboxShader.enableShader();
         gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("viewMatrix"), false, viewMatrix);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+        gl.uniform1i(mSkyboxShader.getUniformLocation("environmentMap"), 0);
         mCube.render();
 
         requestAnimationFrame(update);

@@ -115,23 +115,18 @@ export default class Object
         
         if (shader !== null)
         {
-            gl.uniform1i(shader.getUniformLocation("albedoMap"), 0);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.albedo || this.defaultTexture);
 
-            gl.uniform1i(shader.getUniformLocation("normalMap"), 1);
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, this.normal || this.defaultTexture);
 
-            gl.uniform1i(shader.getUniformLocation("metallicMap"), 2);
             gl.activeTexture(gl.TEXTURE2);
             gl.bindTexture(gl.TEXTURE_2D, this.metallic || this.defaultTexture);
 
-            gl.uniform1i(shader.getUniformLocation("roughnessMap"), 3);
             gl.activeTexture(gl.TEXTURE3);
             gl.bindTexture(gl.TEXTURE_2D, this.roughness || this.defaultTexture);
 
-            gl.uniform1i(shader.getUniformLocation("aoMap"), 4);
             gl.activeTexture(gl.TEXTURE4);
             gl.bindTexture(gl.TEXTURE_2D, this.ao || this.defaultTexture);
         } 

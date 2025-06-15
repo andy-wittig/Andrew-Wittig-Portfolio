@@ -17,7 +17,7 @@ if (!gl)
     console.log("This browser doesn't support WebGL 2.");
 }
 
-gl.getExtension('EXT_color_buffer_float');
+gl.getExtension("EXT_color_buffer_float");
 
 export default gl;
 
@@ -53,7 +53,6 @@ const divMonitorDesc = document.createElement("div");
 divMonitorElement.className = "floating-div";
 
 divContainerElement.append(iconAnglesDown);
-
 clipboardLeftButton.append(iconChevronLeft);
 clipboardRightButton.append(iconChevronRight);
 divContainerElement.append(clipboardLeftButton);
@@ -78,9 +77,10 @@ const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.pn
 const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
 const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", null);
 const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
-const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", null, "Textures/Mug/roughness.png", null);
+const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
 const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 const mCube = new Object("Models/cube.obj");
+const mQuad = new Object("Models/quad.obj");
 
 //Custom Frame Buffers
 const targetTexture = gl.createTexture();
@@ -108,7 +108,7 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, 0);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
 
-//PBR framebuffer ------------
+//PBR ------------
 gl.enable(gl.DEPTH_TEST);
 gl.enable(gl.TEXTURE_CUBE_MAP_SEAMLESS);
 gl.depthFunc(gl.LEQUAL);
@@ -118,7 +118,7 @@ var captureRBO = gl.createRenderbuffer();
 
 gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
 gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
-gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 1024, 1024);
+gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, captureRBO);
 
 //Load HDR environment map
@@ -137,19 +137,17 @@ hdrImage.onload = () => {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 };
 
-gl.bindTexture(gl.TEXTURE_2D, null);
-
 //Setup cubemap
 const envCubemap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 for (let i = 0; i < 6; i++)
 {
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 1024, 1024, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 512, 512, 0, gl.RGBA, gl.FLOAT, null);
 }
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 //Convert HDR equirectangular environment map to cubemap
@@ -165,19 +163,32 @@ const captureViews = [
 
 await mCube.Initialize();
 await mQuad.Initialize();
+
+await mShader.Initialize();
+await mPickingShader.Initialize();
 await mCubemapShader.Initialize();
 await mConvolutionShader.Initialize();
 await mPrefilterShader.Initialize();
 await mBrdfShader.Initialize();
+await mSkyboxShader.Initialize();
 
+mShader.enableShader();
+gl.uniform1i(mShader.getUniformLocation("albedoMap"), 0);
+gl.uniform1i(mShader.getUniformLocation("normalMap"), 1);
+gl.uniform1i(mShader.getUniformLocation("metallicMap"), 2);
+gl.uniform1i(mShader.getUniformLocation("roughnessMap"), 3);
+gl.uniform1i(mShader.getUniformLocation("aoMap"), 4);
+gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
+gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
+gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
 
 mCubemapShader.enableShader();
+gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
 gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("projectionMatrix"), false, captureProjection);
 gl.activeTexture(gl.TEXTURE0);
 gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
-gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
 
-gl.viewport(0, 0, 1024, 1024);
+gl.viewport(0, 0, 512, 512);
 gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
 for (let i = 0; i < 6; i++)
 {
@@ -187,6 +198,9 @@ for (let i = 0; i < 6; i++)
     mCube.render();
 }
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
 //Irradiance map
 const irradianceMap = gl.createTexture();
@@ -268,9 +282,9 @@ for (let mip = 0; mip < maxMipLevels; mip++)
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 //Generate 2D LUT
-const brdfLUTexture = gl.createTexture();
-gl.bindTexture(gl.TEXTURE_2D, brdfLUTexture);
-gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, 512, 512, 0, gl.RG, gl.FLOAT, 0);
+const brdfLUTTexture = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, 512, 512, 0, gl.RG, gl.FLOAT, null);
 
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -280,13 +294,13 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
 gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
 gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
-gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, brdfLUTexture, 0);
+gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, brdfLUTTexture, 0);
 
 gl.viewport(0, 0, 512, 512);
 mBrdfShader.enableShader();
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 mQuad.render();
-gl.bindFramebuffer(gl.FRAMEBUFFER, 0);
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 //-----END PBR
 
 function checkDuplicate(array1, array2)
@@ -340,10 +354,6 @@ let deltaTime = 0;
 async function runEngine()
 {
     //Init
-    await mShader.Initialize();
-    await mPickingShader.Initialize();
-    await mSkyboxShader.Initialize();
-
     await mMonitor.Initialize();
     await mMonitor2.Initialize();
     await mMonitor3.Initialize();
@@ -749,15 +759,12 @@ async function runEngine()
         mShader.enableShader();
 
         //Binding pre-computed IBL data
-        gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
         gl.activeTexture(gl.TEXTURE5);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
-        gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
         gl.activeTexture(gl.TEXTURE6);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
-        gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 7);
         gl.activeTexture(gl.TEXTURE7);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, brdfLUTexture);
+        gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
 
         //Lighting Positions
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);

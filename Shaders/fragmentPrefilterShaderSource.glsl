@@ -1,7 +1,7 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
-out vev4 FragColor;
+out vec4 FragColor;
 in vec3 localPos;
 
 uniform samplerCube environmentMap;

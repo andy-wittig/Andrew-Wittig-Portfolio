@@ -68,6 +68,8 @@ const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragme
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
 const mConvolutionShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentConvolutionShaderSource.glsl");
+const mPrefilterShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentPrefilterShaderSource.glsl");
+const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentBrdfShaderSource.glsl");
 const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 
 //Objects
@@ -108,6 +110,7 @@ gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER,
 
 //PBR framebuffer ------------
 gl.enable(gl.DEPTH_TEST);
+gl.enable(gl.TEXTURE_CUBE_MAP_SEAMLESS);
 gl.depthFunc(gl.LEQUAL);
 
 var captureFBO = gl.createFramebuffer();
@@ -161,8 +164,12 @@ const captureViews = [
 ];
 
 await mCube.Initialize();
+await mQuad.Initialize();
 await mCubemapShader.Initialize();
 await mConvolutionShader.Initialize();
+await mPrefilterShader.Initialize();
+await mBrdfShader.Initialize();
+
 
 mCubemapShader.enableShader();
 gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("projectionMatrix"), false, captureProjection);
@@ -176,9 +183,7 @@ for (let i = 0; i < 6; i++)
 {
     gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     mCube.render();
 }
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -213,12 +218,76 @@ for (let i = 0; i < 6; i++)
 {
     gl.uniformMatrix4fv(mConvolutionShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     mCube.render();
 }
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+//Pre-filter cubemap
+const prefilterMap = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
+
+for (let i = 0; i < 6; i++)
+{
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 128, 128, 0, gl.RGBA, gl.FLOAT, null);
+}
+
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+mPrefilterShader.enableShader();
+gl.uniform1i(mPrefilterShader.getUniformLocation("environmentMap"), 0);
+gl.uniformMatrix4fv(mPrefilterShader.getUniformLocation("projectionMatrix"), false, captureProjection);
+gl.activeTexture(gl.TEXTURE0);
+gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+
+gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
+const maxMipLevels = 5;
+for (let mip = 0; mip < maxMipLevels; mip++)
+{
+    const mipWidth = 128 * Math.pow(0.5, mip);
+    const mipHeight = 128 * Math.pow(0.5, mip);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, mipWidth, mipHeight);
+    gl.viewport(0, 0, mipWidth, mipHeight);
+
+    const roughness = mip / (maxMipLevels - 1);
+    gl.uniform1f(mPrefilterShader.getUniformLocation("roughness"), roughness);
+    for (let i = 0; i < 6; i++)
+    {
+        gl.uniformMatrix4fv(mPrefilterShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        mCube.render();
+    }
+}
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+//Generate 2D LUT
+const brdfLUTexture = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, brdfLUTexture);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, 512, 512, 0, gl.RG, gl.FLOAT, 0);
+
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
+gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
+gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
+gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, brdfLUTexture, 0);
+
+gl.viewport(0, 0, 512, 512);
+mBrdfShader.enableShader();
+gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+mQuad.render();
+gl.bindFramebuffer(gl.FRAMEBUFFER, 0);
+//-----END PBR
 
 function checkDuplicate(array1, array2)
 {
@@ -678,9 +747,19 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
+
+        //Binding pre-computed IBL data
         gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
         gl.activeTexture(gl.TEXTURE5);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
+        gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
+        gl.activeTexture(gl.TEXTURE6);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
+        gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 7);
+        gl.activeTexture(gl.TEXTURE7);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, brdfLUTexture);
+
+        //Lighting Positions
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);

@@ -67,6 +67,7 @@ divOverlayElement.append(divMonitorElement);
 const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
+const mConvolutionShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentConvolutionShaderSource.glsl");
 const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 
 //Objects
@@ -114,7 +115,7 @@ var captureRBO = gl.createRenderbuffer();
 
 gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
 gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
-gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
+gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 1024, 1024);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, captureRBO);
 
 //Load HDR environment map
@@ -140,7 +141,7 @@ const envCubemap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 for (let i = 0; i < 6; i++)
 {
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 512, 512, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 1024, 1024, 0, gl.RGBA, gl.FLOAT, null);
 }
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -161,6 +162,7 @@ const captureViews = [
 
 await mCube.Initialize();
 await mCubemapShader.Initialize();
+await mConvolutionShader.Initialize();
 
 mCubemapShader.enableShader();
 gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("projectionMatrix"), false, captureProjection);
@@ -168,12 +170,48 @@ gl.activeTexture(gl.TEXTURE0);
 gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
 gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
 
-gl.viewport(0, 0, 512, 512);
+gl.viewport(0, 0, 1024, 1024);
 gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
 for (let i = 0; i < 6; i++)
 {
     gl.uniformMatrix4fv(mCubemapShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    mCube.render();
+}
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+//Irradiance map
+const irradianceMap = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
+for (let i = 0; i < 6; i++)
+{
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 32, 32, 0, gl.RGBA, gl.FLOAT, null);
+}
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
+gl.bindRenderbuffer(gl.RENDERBUFFER, captureFBO);
+gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 32, 32);
+
+mConvolutionShader.enableShader();
+gl.uniform1i(mConvolutionShader.getUniformLocation("environmentMap"), 0);
+gl.uniformMatrix4fv(mConvolutionShader.getUniformLocation("projectionMatrix"), false, captureProjection);
+gl.activeTexture(gl.TEXTURE0);
+gl.bindTexture(gl.TEXTURE_2D, envCubemap);
+
+gl.viewport(0, 0, 32, 32);
+gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
+for (let i = 0; i < 6; i++)
+{
+    gl.uniformMatrix4fv(mConvolutionShader.getUniformLocation("viewMatrix"), false, captureViews[i]);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -735,7 +773,7 @@ async function runEngine()
         gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("viewMatrix"), false, viewMatrix);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
         gl.uniform1i(mSkyboxShader.getUniformLocation("environmentMap"), 0);
         mCube.render();
 

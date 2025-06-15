@@ -1,16 +1,16 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 out vec4 FragColor;
-in vec3 WorldPos;
+in vec3 localPos;
 
-uniform sampler2D environmentMap;
+uniform samplerCube environmentMap;
 
 const float PI = 3.14159265359;
 
 void main()
 {
-    vec3 N = normalize(WorldPos);
+    vec3 N = normalize(localPos);
     vec3 irradiance = vec3(0.0);
     
     vec3 up = vec3(0.0, 1.0, 0.0);

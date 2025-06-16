@@ -415,23 +415,9 @@ async function runEngine()
     const camera2Fov = 70;
     const cameraView2 = [[0, 1.6, 3.0], [0, .3, .8], [0, 1, 0]];
 
-    function updateCamera(position, fov)
-    {
-        const referenceHeight = screen.height;
-        const effectiveHeight = gl.canvas.height / 2;
-        heightRatio = (effectiveHeight / referenceHeight);
-        const fieldOfView = (fov * Math.PI) / 180;
-        const zNear = 0.1;
-        const zFar = 100.0;
-        const aspect = gl.canvas.width / effectiveHeight;
-
-        mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-        mat4.lookAt(viewMatrix, position[0], position[1], position[2]);
-    }
-
     var selectedObject = mMonitor;
 
-    function pickObjects()
+    function getPickingID()
     {
         const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
         const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
@@ -439,8 +425,6 @@ async function runEngine()
 
         gl.readPixels(pixelX, pixelY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
         const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24) >>> 0;
-        //console.log("x: " + pixelX + ", y: " + pixelY + ", data:" + data[0] + "," + data[1] + "," + data[2] + "," + data[3]);
-        //console.log("\n" + id);
         return id;
     }
 
@@ -628,26 +612,40 @@ async function runEngine()
         var screenX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
         var screenY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.clientHeight / 2; //divide by 2 since canvas styling height is 200%;
 
-        return [screenX, screenY];
+        return [screenX, screenY]; 
+    }
+
+    function updateCamera(view, fov)
+    {
+        let effectiveHeight = gl.canvas.clientHeight / 2;
+        let fieldOfView = degToRad(fov);
+        let zNear = 0.1;
+        let zFar = 100.0;
+        let aspect = gl.canvas.clientWidth / effectiveHeight;
+
+        mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+        mat4.lookAt(viewMatrix, view[0], view[1], view[2]);
     }
 
     let showDescription = false;
 
     function renderMonitorText()
     {
-        let pixelTextCoords = getScreenPosFromObject([0, 1.0, 0, 1], selectedObject);
+        let topLeft = getScreenPosFromObject([-0.8, 1.2, 0.8, 1], selectedObject);
+        let bottomRight = getScreenPosFromObject([0.8, 0, 0.8, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
         divMonitorName.innerHTML = name;
         divMonitorDesc.innerHTML = desc;
 
-        divMonitorElement.style.left = Math.floor(pixelTextCoords[0] - divMonitorElement.offsetWidth / 2) + "px";
-        divMonitorElement.style.top = Math.floor(pixelTextCoords[1]) + "px";
-        divMonitorElement.style.width = "280px";
-        divMonitorElement.style.height = "160px";
+        //Resize monitor text box
+        divMonitorElement.style.left = Math.floor(topLeft[0]) + "px";
+        divMonitorElement.style.top = Math.floor(topLeft[1]) + "px";
+        divMonitorElement.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
+        divMonitorElement.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
-        if (startCameraAnim == false && firstClick) 
+        if (startCameraAnim == false && firstClick)
         {
             const stylesheet = document.styleSheets[0];
             for (let i = stylesheet.cssRules.length - 1; i >= 0 ; i--)
@@ -703,9 +701,9 @@ async function runEngine()
     let prevTime = 0;
     let slideIn = false;
     
-    function update(time) 
+    function update(time) //Called every frame and renders the scene
     {
-        time *= 0.001; //convert to seconds
+        time *= 0.001; //converts to seconds
         deltaTime = time - prevTime;
         prevTime = time;
 
@@ -716,25 +714,24 @@ async function runEngine()
         gl.enable(gl.SCISSOR_TEST);
         gl.depthFunc(gl.LESS);
 
-        resizeCanvasToDisplaySize(gl.canvas);
+        //Canvas resize
+        resizeCanvasToDisplaySize();
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
-        
+        //Scene 1 Viewport
+        const halfHeight = gl.drawingBufferHeight / 2 | 0;
+        gl.viewport(0, halfHeight, gl.drawingBufferWidth, gl.drawingBufferHeight - halfHeight);
+        gl.scissor(0, halfHeight, gl.drawingBufferWidth, gl.drawingBufferHeight - halfHeight);
+        //Update Camera and Animate
         if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
-
-        //Render Monitor Canvas
         updateCamera(cameraView, cameraFov);
-
-        const halfHeight = gl.canvas.height / 2 | 0;
-        gl.viewport(0, halfHeight, gl.canvas.width, gl.canvas.height - halfHeight);
-        gl.scissor(0, halfHeight, gl.canvas.width, gl.canvas.height - halfHeight);
         
+        //--------------------Render Picking--------------------
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         
         mPickingShader.enableShader();
-
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
 	    gl.uniformMatrix4fv(mPickingShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
@@ -750,25 +747,23 @@ async function runEngine()
         gl.uniform4fv(mPickingShader.getUniformLocation("id"), mMonitor3.getID()); 
         mMonitor3.render();
 
-        let pickID = pickObjects();
+        let pickID = getPickingID();
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        //--------------------End Picking--------------------
 
-        //Render Objects
+        //--------------------Render Scene 1--------------------
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
         mShader.enableShader();
-
-        //Lighting Positions
+        //Lighting Uniforms
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [5, 5, 5]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
-        
+        //Camera Uniforms
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
-
         //Binding pre-computed IBL data
         gl.activeTexture(gl.TEXTURE5);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
@@ -776,58 +771,48 @@ async function runEngine()
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
         gl.activeTexture(gl.TEXTURE7);
         gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
-        
-        gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
+        //Render Scene Objects
+        gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         renderObjectPicking(mShader, mMonitor, pickID);
         renderObjectPicking(mShader, mMonitor2, pickID);
         renderObjectPicking(mShader, mMonitor3, pickID);
-
-        //Update Model Positions
-        const sinAmplitude = 0.00025;
-        const sinFreqency = 1.2;
-        mMonitor.translate([0, Math.sin((time + 1) * sinFreqency) * sinAmplitude, 0]);
-        mMonitor2.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
-        mMonitor3.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
-
         //Monitor Text Rendering
         renderMonitorText();
 
-        //WebGL Render Settings
-        gl.clearDepth(1.0);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        gl.enable(gl.SCISSOR_TEST);
-        gl.depthFunc(gl.LESS);
+        //Update Model Positions
+        const sinAmplitude = 0.00025;
+        const sinFreqency = 1.4;
+        mMonitor.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
+        mMonitor2.translate([0, Math.sin((time + 1) * sinFreqency) * sinAmplitude, 0]);
+        mMonitor3.translate([0, Math.sin((time + 2) * sinFreqency) * sinAmplitude, 0]);
+        //--------------------End Scene 1--------------------
 
-        //Render Clipboard Canvas
-        gl.viewport(0, 0, gl.canvas.width, halfHeight);
-        gl.scissor(0, 0, gl.canvas.width, halfHeight);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        //--------------------Render Scene 2--------------------
+        //Scene 2 Viewport
+        gl.viewport(0, 0, gl.drawingBufferWidth, halfHeight);
+        gl.scissor(0, 0, gl.drawingBufferWidth, halfHeight);
 
         updateCamera(cameraView2, camera2Fov);
 
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
         mShader.enableShader();
+        //Lighting Uniforms
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 1.5, -.5]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
+        //Camera Uniforms
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
+        //Scene Objects Rendering
+        gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
-        //Binding pre-computed IBL data
-        gl.activeTexture(gl.TEXTURE5);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
-        gl.activeTexture(gl.TEXTURE6);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
-        gl.activeTexture(gl.TEXTURE7);
-        gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
-        
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mClipBoard.getModelMatrix());
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mClipBoard.getModelMatrix()))));
-        gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
         mClipBoard.render(mShader);
 
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mDesk.getModelMatrix());
@@ -842,7 +827,20 @@ async function runEngine()
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPen.getModelMatrix()))));
         mPen.render(mShader);
 
-        /* Skybox
+        //Animations
+        if (startClipboardAnim)
+        {
+            clipboardAnimate(mClipBoard);
+        }
+        else
+        {
+            clipboardLeftButton.classList.remove("anim-fadeout-in");
+            clipboardRightButton.classList.remove("anim-fadeout-in");
+        }
+        //--------------------End Scene 2--------------------
+
+        /* 
+        //Skybox for testing purposes
         gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.CULL_FACE);
 
@@ -854,83 +852,28 @@ async function runEngine()
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
         mCube.render();
         */
-
+        //Display LUT
         //mBrdfShader.enableShader();
         //mQuad.render();
-
-        if (startClipboardAnim)
-        {
-            clipboardAnimate(mClipBoard);
-        }
-        else
-        {
-            clipboardLeftButton.classList.remove("anim-fadeout-in");
-            clipboardRightButton.classList.remove("anim-fadeout-in");
-        }
 
         requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
 
     //Canvas Resizing
-    const canvasToDisplaySizeMap = new Map([[canvas, [300, 150]]]);
-
-    function onResize(entries)
+    function resizeCanvasToDisplaySize() 
     {
-        for (const entry of entries)
+        var width = gl.canvas.clientWidth;
+        var height = gl.canvas.clientHeight;
+        if (gl.canvas.width != width ||
+            gl.canvas.height != height) 
         {
-            let width;
-            let height;
-            let dpr = window.devicePixelRatio;
-
-            if (entry.devicePixelContentBoxSize)
-            {
-                width = entry.devicePixelContentBoxSize[0].inlineSize;
-                height = entry.devicePixelContentBoxSize[0].blockSize;
-                dpr = 1;
-            } 
-            else if (entry.contentBoxSize)
-            {
-                if (entry.contentBoxSize[0])
-                {
-                    width = entry.contentBoxSize[0].inlineSize;
-                    height = entry.contentBoxSize[0].blockSize;
-                } 
-                else
-                {
-                    width = entry.contentBoxSize.inlineSize;
-                    height = entry.contentBoxSize.blockSize;
-                }
-            } 
-            else
-            {
-                width = entry.contentRect.width;
-                height = entry.contentRect.height;
-            }
-            const displayWidth = Math.round(width * dpr);
-            const displayHeight = Math.round(height * dpr);
-            canvasToDisplaySizeMap.set(entry.target, [displayWidth, displayHeight]);
+            gl.canvas.width = width;
+            gl.canvas.height = height;
         }
     }
 
-    const resizeObserver = new ResizeObserver(onResize);
-    resizeObserver.observe(canvas, {box: "content-box"});
-
-    function resizeCanvasToDisplaySize(canvas)
-    {
-        const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas);
-
-        const needResize = canvas.width !== displayWidth || canvas.height !== displayHeight;
-        if (needResize)
-        {
-            canvas.width = displayWidth;
-            canvas.height = displayHeight;
-        }
-
-        return needResize;
-    }
-
-    //Event Listener
+    //Event Listeners
     let touchMoved = false;
 
     gl.canvas.addEventListener("touchstart", (event) => {

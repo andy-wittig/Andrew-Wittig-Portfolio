@@ -126,7 +126,7 @@ gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
 
 const hdrTexture = gl.createTexture();
 var hdrImage = new HDRImage();
-hdrImage.src = "HDR/sky.hdr";
+hdrImage.src = "HDR/lounge.hdr";
 
 hdrImage.onload = () => {
     gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
@@ -420,7 +420,7 @@ async function runEngine()
         const referenceHeight = screen.height;
         const effectiveHeight = gl.canvas.height / 2;
         heightRatio = (effectiveHeight / referenceHeight);
-        const fieldOfView = ((heightRatio * fov) * Math.PI) / 180;
+        const fieldOfView = (fov * Math.PI) / 180;
         const zNear = 0.1;
         const zFar = 100.0;
         const aspect = gl.canvas.width / effectiveHeight;
@@ -635,7 +635,7 @@ async function runEngine()
 
     function renderMonitorText()
     {
-        let pixelTextCoords = getScreenPosFromObject([0, 0.8, 0, 1], selectedObject);
+        let pixelTextCoords = getScreenPosFromObject([0, 1.0, 0, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
@@ -644,8 +644,8 @@ async function runEngine()
 
         divMonitorElement.style.left = Math.floor(pixelTextCoords[0] - divMonitorElement.offsetWidth / 2) + "px";
         divMonitorElement.style.top = Math.floor(pixelTextCoords[1]) + "px";
-        divMonitorElement.style.width = 28 * (1 / heightRatio) + "vh";
-        divMonitorElement.style.height = 18 * (1 / heightRatio) + "vh";
+        divMonitorElement.style.width = "280px";
+        divMonitorElement.style.height = "160px";
 
         if (startCameraAnim == false && firstClick) 
         {
@@ -793,18 +793,6 @@ async function runEngine()
         //Monitor Text Rendering
         renderMonitorText();
 
-        //Skybox
-        gl.depthFunc(gl.LEQUAL);
-        gl.disable(gl.CULL_FACE);
-
-        mSkyboxShader.enableShader();
-        gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
-        gl.uniformMatrix4fv(mSkyboxShader.getUniformLocation("viewMatrix"), false, viewMatrix);
-        gl.uniform1i(mSkyboxShader.getUniformLocation("environmentMap"), 0);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
-        mCube.render();
-
         //WebGL Render Settings
         gl.clearDepth(1.0);
         gl.enable(gl.DEPTH_TEST);
@@ -854,7 +842,7 @@ async function runEngine()
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPen.getModelMatrix()))));
         mPen.render(mShader);
 
-        //Skybox
+        /* Skybox
         gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.CULL_FACE);
 
@@ -865,6 +853,7 @@ async function runEngine()
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
         mCube.render();
+        */
 
         //mBrdfShader.enableShader();
         //mQuad.render();

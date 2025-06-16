@@ -72,13 +72,13 @@ const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/f
 const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 
 //Objects
-const mMonitor = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
-const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
-const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
-const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", null);
-const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
-const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
-const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
+const mMonitor = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", "Textures/clipboard_ao.png");
+const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", "Textures/default_ao.png");
+const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", "Textures/default_ao.png");
+const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, "Textures/default_ao.png");
 const mCube = new Object("Models/cube.obj");
 const mQuad = new Object("Models/quad.obj");
 
@@ -126,7 +126,7 @@ gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
 
 const hdrTexture = gl.createTexture();
 var hdrImage = new HDRImage();
-hdrImage.src = "HDR/studio.hdr";
+hdrImage.src = "HDR/sky.hdr";
 
 hdrImage.onload = () => {
     gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
@@ -761,9 +761,9 @@ async function runEngine()
 
         //Lighting Positions
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [80, 80, 80]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [5, 5, 5]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [100, 100, 100]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
         
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);

@@ -759,14 +759,6 @@ async function runEngine()
 
         mShader.enableShader();
 
-        //Binding pre-computed IBL data
-        gl.activeTexture(gl.TEXTURE5);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
-        gl.activeTexture(gl.TEXTURE6);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
-        gl.activeTexture(gl.TEXTURE7);
-        gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
-
         //Lighting Positions
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [80, 80, 80]);
@@ -777,6 +769,14 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
+        //Binding pre-computed IBL data
+        gl.activeTexture(gl.TEXTURE5);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
+        gl.activeTexture(gl.TEXTURE6);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
+        gl.activeTexture(gl.TEXTURE7);
+        gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
+        
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
         renderObjectPicking(mShader, mMonitor, pickID);
@@ -829,6 +829,14 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
+        //Binding pre-computed IBL data
+        gl.activeTexture(gl.TEXTURE5);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
+        gl.activeTexture(gl.TEXTURE6);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
+        gl.activeTexture(gl.TEXTURE7);
+        gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
+        
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mClipBoard.getModelMatrix());
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mClipBoard.getModelMatrix()))));
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);

@@ -284,6 +284,7 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 //Generate 2D LUT
 const brdfLUTTexture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
+
 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, 512, 512, 0, gl.RG, gl.FLOAT, null);
 
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -768,9 +769,9 @@ async function runEngine()
 
         //Lighting Positions
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [80, 80, 80]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [50, 50, 50]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [100, 100, 100]);
         
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
@@ -857,7 +858,10 @@ async function runEngine()
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
         mCube.render();
 
-        if (startClipboardAnim) 
+        //mBrdfShader.enableShader();
+        //mQuad.render();
+
+        if (startClipboardAnim)
         {
             clipboardAnimate(mClipBoard);
         }

@@ -1,8 +1,6 @@
 //Imports
 import Shader from "./shader.js"
-import Object from "./object.js"
-import * as THREE from 'three';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import Model from "./model.js"
 
 //Get WebGL Context
 const canvas = document.getElementById("main-canvas");
@@ -21,48 +19,43 @@ gl.getExtension("EXT_color_buffer_float");
 
 export default gl;
 
-function degToRad(degrees)
-{
-    return (degrees * Math.PI) / 180.0;
-}
-
-function radToDeg(rads)
-{
-    return rads * (180.0 / Math.PI);
-}
-
-//HTML Integration
-const divContainerElement = document.getElementById("container");
-const divOverlayElement = document.getElementById("overlay");
-
+//--------------------HTML Integration--------------------
+//Containers
+const divContainer = document.getElementById("container");
+const divOverlay = document.getElementById("overlay");
+//Buttons
 const clipboardLeftButton = document.createElement("button");
 clipboardLeftButton.className = "left-btn";
 const clipboardRightButton = document.createElement("button");
 clipboardRightButton.className = "right-btn";
-
+//Icons
 const iconAnglesDown = document.createElement("i");
 iconAnglesDown.className = "fa fa-angle-double-down";
 const iconChevronLeft = document.createElement("i");
 iconChevronLeft.className = "fa fa-chevron-left";
 const iconChevronRight = document.createElement("i");
 iconChevronRight.className = "fa fa-chevron-right";
-
-const divMonitorElement = document.createElement("div");
+//Content
+const divMonitor = document.createElement("div");
+divMonitor.className = "floating-div-monitor";
+const divClipboard = document.createElement("div");
+divClipboard.className = "floating-div-clipboard";
 const divMonitorName = document.createElement("div");
 const divMonitorDesc = document.createElement("div");
-divMonitorElement.className = "floating-div";
 
-divContainerElement.append(iconAnglesDown);
+divContainer.append(iconAnglesDown);
 clipboardLeftButton.append(iconChevronLeft);
 clipboardRightButton.append(iconChevronRight);
-divContainerElement.append(clipboardLeftButton);
-divContainerElement.append(clipboardRightButton);
+divContainer.append(clipboardLeftButton);
+divContainer.append(clipboardRightButton);
 
-divMonitorElement.append(divMonitorName);
-divMonitorElement.append(divMonitorDesc);
-divOverlayElement.append(divMonitorElement);
+divMonitor.append(divMonitorName);
+divMonitor.append(divMonitorDesc);
+divOverlay.append(divMonitor);
+divOverlay.append(divClipboard);
+//--------------------End HTML--------------------
 
-//Shaders
+//Shader Definitions
 const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
@@ -71,18 +64,18 @@ const mPrefilterShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "S
 const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentBrdfShaderSource.glsl");
 const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 
-//Objects
-const mMonitor = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mMonitor2 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mMonitor3 = new Object("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mClipBoard = new Object("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", "Textures/clipboard_ao.png");
-const mDesk = new Object("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", "Textures/default_ao.png");
-const mMug = new Object("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", "Textures/default_ao.png");
-const mPen = new Object("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, "Textures/default_ao.png");
-const mCube = new Object("Models/cube.obj");
-const mQuad = new Object("Models/quad.obj");
+//Model Definitions
+const mMonitor = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor2 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor3 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mClipBoard = new Model("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", "Textures/clipboard_ao.png");
+const mDesk = new Model("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", "Textures/default_ao.png");
+const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", "Textures/default_ao.png");
+const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, "Textures/default_ao.png");
+const mCube = new Model("Models/cube.obj");
+const mQuad = new Model("Models/quad.obj");
 
-//Custom Frame Buffers
+//--------------------Picking Frambuffer--------------------
 const targetTexture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, targetTexture);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -101,14 +94,14 @@ function setFrameBufferAttatchmentSize(width, height)
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 }
 
-//create and bind frame buffer
 const mPickingBuffer = gl.createFramebuffer();
 gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, 0);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+//--------------------End Picking Buffer--------------------
 
-//PBR ------------
+//--------------------PBR Framebuffers--------------------
 gl.enable(gl.DEPTH_TEST);
 gl.enable(gl.TEXTURE_CUBE_MAP_SEAMLESS);
 gl.depthFunc(gl.LEQUAL);
@@ -137,7 +130,7 @@ hdrImage.onload = () => {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 };
 
-//Setup cubemap
+//Setup Cubemap
 const envCubemap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 for (let i = 0; i < 6; i++)
@@ -164,23 +157,10 @@ const captureViews = [
 await mCube.Initialize();
 await mQuad.Initialize();
 
-await mShader.Initialize();
-await mPickingShader.Initialize();
 await mCubemapShader.Initialize();
 await mConvolutionShader.Initialize();
 await mPrefilterShader.Initialize();
 await mBrdfShader.Initialize();
-await mSkyboxShader.Initialize();
-
-mShader.enableShader();
-gl.uniform1i(mShader.getUniformLocation("albedoMap"), 0);
-gl.uniform1i(mShader.getUniformLocation("normalMap"), 1);
-gl.uniform1i(mShader.getUniformLocation("metallicMap"), 2);
-gl.uniform1i(mShader.getUniformLocation("roughnessMap"), 3);
-gl.uniform1i(mShader.getUniformLocation("aoMap"), 4);
-gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
-gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
-gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
 
 mCubemapShader.enableShader();
 gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
@@ -202,7 +182,7 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
-//Irradiance map
+//Irradiance Map
 const irradianceMap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
 
@@ -237,7 +217,7 @@ for (let i = 0; i < 6; i++)
 }
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-//Pre-filter cubemap
+//Pre-filter Cubemap
 const prefilterMap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
 
@@ -302,8 +282,9 @@ mBrdfShader.enableShader();
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 mQuad.render();
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-//-----END PBR
+//--------------------End PBR Framebuffers--------------------
 
+//--------------------Object ID--------------------
 function checkDuplicate(array1, array2)
 {
     if (array1.length !== array2.length) { return false; }
@@ -340,33 +321,39 @@ function assignUniqueID()
         }
     }
 }
+//--------------------End Object ID--------------------
 
-function easeInOut(t)
-{
-    if (t <= 0.5)
-    {
-        return 2.0 * t * t;
-    }
-    t -= 0.5;
-    return 2.0 * t * (1.0 - t) + 0.5;
-}
+//--------------------Rendering Initialization--------------------
+await mPickingShader.Initialize();
+await mShader.Initialize();
+await mSkyboxShader.Initialize();
+
+await mMonitor.Initialize();
+await mMonitor2.Initialize();
+await mMonitor3.Initialize();
+await mClipBoard.Initialize();
+await mDesk.Initialize();
+await mMug.Initialize();
+await mPen.Initialize();
+
+mMonitor.setID(assignUniqueID());
+mMonitor2.setID(assignUniqueID());
+mMonitor3.setID(assignUniqueID());
+
+mShader.enableShader();
+gl.uniform1i(mShader.getUniformLocation("albedoMap"), 0);
+gl.uniform1i(mShader.getUniformLocation("normalMap"), 1);
+gl.uniform1i(mShader.getUniformLocation("metallicMap"), 2);
+gl.uniform1i(mShader.getUniformLocation("roughnessMap"), 3);
+gl.uniform1i(mShader.getUniformLocation("aoMap"), 4);
+gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
+gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
+gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
+//--------------------End Rendering Initialization--------------------
 
 let deltaTime = 0;
 async function runEngine()
 {
-    //Init
-    await mMonitor.Initialize();
-    await mMonitor2.Initialize();
-    await mMonitor3.Initialize();
-    await mClipBoard.Initialize();
-    await mDesk.Initialize();
-    await mMug.Initialize();
-    await mPen.Initialize();
-
-    mMonitor.setID(assignUniqueID());
-    mMonitor2.setID(assignUniqueID());
-    mMonitor3.setID(assignUniqueID());
-
     mMonitor.setName("<b>Who am I?</b>");
     mMonitor.setDescription("Driven to creating immersive experiences with stunning visuals.");
     mMonitor2.setName("<b>Projects</b>");
@@ -386,48 +373,42 @@ async function runEngine()
     </ul> 
     `);
 
+    //Setup Monitor Scene 1 Transformations
     mMonitor.rotate((0 * Math.PI) / 180, [0, 1, 0]);
     mMonitor2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
     mMonitor3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
 
     const objectPositionRadius = 5;
-
     mMonitor.translate([0, 0, objectPositionRadius]);
     mMonitor2.translate([0, 0, objectPositionRadius]);
     mMonitor3.translate([0, 0, objectPositionRadius]);
 
-    let heightRatio = 1;
+    ///Setup Clipboard Scene 2 Trasformations
+    mMug.setPosition([2, 0.2, 0.5]);
+    mMug.rotate(degToRad(-30), [0, 1, 0]);
+    mPen.setPosition([1.5, 0, 1]);
+    mPen.rotate(degToRad(10), [0, 1, 0]);
+    
+    const clipboardStartingPos = [0, 1, 2];
+    mClipBoard.setPosition(clipboardStartingPos);
 
     //Monitor Camera
     let firstClick = false;
-
     const cameraStartRadius = 12;
     const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 1.5, (cameraStartRadius) * Math.cos(degToRad(0))];
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
     const cameraFov = 60;
     const cameraRadius = 10;
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
-
-    const projectionMatrix = mat4.create();
-    const viewMatrix = mat4.create();
-
     //Clipboard Camera
     const camera2Fov = 70;
     const cameraView2 = [[0, 1.6, 3.0], [0, .3, .8], [0, 1, 0]];
-
+    
+    const projectionMatrix = mat4.create();
+    const viewMatrix = mat4.create();
     var selectedObject = mMonitor;
 
-    function getPickingID()
-    {
-        const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
-        const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
-        const data = new Uint8Array(4);
-
-        gl.readPixels(pixelX, pixelY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
-        const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24) >>> 0;
-        return id;
-    }
-
+    //--------------------Monitor Animation--------------------
     let animStepRotation = 0;
     let animStepPosition = [0, 0, 0];
     let animStepRadius = 0;
@@ -463,19 +444,16 @@ async function runEngine()
 
         if (animProgress == 1) { startCameraAnim = false; }
     }
+    //--------------------End Monitor Animation--------------------
 
-    mMug.setPosition([1.8, .2, -.2]);
-    mPen.setPosition([1.5, 0, .4]);
-    mPen.rotate(degToRad(10), [0, 1, 0]);
-
-    const clipboardStartingPos = [0, 1, 2];
+    //--------------------Clipboard Animation--------------------
     const clipboardSlideLeftPos = [-4, 1, 2];
     const clipboardSlideRightPos = [4, 1, 2];
-    mClipBoard.setPosition(clipboardStartingPos);
 
     let clipboardAnimProgress = 0;
     let startClipboardAnim = false;
     let flipSlide = false;
+    let slideIn = false;
 
     function clipboardAnimate(clipboardObject)
     {
@@ -548,24 +526,37 @@ async function runEngine()
             flipSlide = false;
         }
     }
+    //--------------------End Clipboard Animation--------------------
 
-    function renderObjectPicking(shader, object, id)
+    //--------------------Object Picking--------------------
+    function getPickingID()
     {
-        var objectID = object.getID();
+        const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
+        const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
+        const data = new Uint8Array(4);
+
+        gl.readPixels(pixelX, pixelY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24) >>> 0;
+        return id;
+    }
+
+    function renderObjectPicking(shader, Model, id)
+    {
+        var objectID = Model.getID();
         var encodedObjectID = objectID[0] * 255 + (objectID[1] * 255 << 8) + (objectID[2] * 255 << 16) + (objectID[3] * 255 << 24) >>> 0;
         
         if (id == encodedObjectID) 
         {
-            if (isLeftMouseDown && !startCameraAnim && (selectedObject !== object || !firstClick))
+            if (isLeftMouseDown && !startCameraAnim && (selectedObject !== Model || !firstClick))
             {
                 //get y objects rotation and position
-                const rotationQuat = object.getRotation();
+                const rotationQuat = Model.getRotation();
                 const angleY = Math.atan2(2 * (rotationQuat[3] * rotationQuat[1] + rotationQuat[0] * rotationQuat[2]),
                                         1 - 2 * (rotationQuat[1] * rotationQuat[1] + rotationQuat[2] * rotationQuat[2]));
                 animRotationFinal = Math.round(radToDeg(angleY));
-                animPositionFinal = object.getPosition();
+                animPositionFinal = Model.getPosition();
                 animRadiusFinal = cameraRadius;
-                selectedObject = object;
+                selectedObject = Model;
 
                 if (!firstClick)
                 {
@@ -589,16 +580,17 @@ async function runEngine()
             gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), selectColor);
             //gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [objectID[0], objectID[1], objectID[2]]); debugging
         }
-        gl.uniformMatrix4fv(shader.getUniformLocation("modelMatrix"), false, object.getModelMatrix());
-        gl.uniformMatrix3fv(shader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), object.getModelMatrix()))));
-        object.render(shader);
+        gl.uniformMatrix4fv(shader.getUniformLocation("modelMatrix"), false, Model.getModelMatrix());
+        gl.uniformMatrix3fv(shader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), Model.getModelMatrix()))));
+        Model.render(shader);
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
     }
+    //--------------------End Object Picking--------------------
 
-    function getScreenPosFromObject(point, object)
+    function getScreenPosFromObject(point, targetModel, useTopViewport = true)
     {
         var worldPosition = vec4.create();
-        vec4.transformMat4(worldPosition, point, object.getModelMatrix());
+        vec4.transformMat4(worldPosition, point, targetModel.getModelMatrix());
 
         var viewProjectionMatrix = mat4.create();
         mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
@@ -610,7 +602,11 @@ async function runEngine()
         clipspace[1] /= clipspace[3];
 
         var screenX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
-        var screenY = (clipspace[1] * -0.5 + 0.5) * (gl.canvas.clientHeight / 2); //divide by 2 since canvas styling height is 200%;
+
+        if (useTopViewport) //Top Viewport
+            var screenY = (clipspace[1] * -0.5 + 0.5) * (gl.canvas.clientHeight / 2);
+        else //Bottom Viewport
+            var screenY = ((clipspace[1] * -0.5 + 0.5) * (gl.canvas.clientHeight / 2)) + (gl.canvas.clientHeight / 2);
 
         return [screenX, screenY];
     }
@@ -629,7 +625,7 @@ async function runEngine()
 
     let showDescription = false;
 
-    function renderMonitorText()
+    function renderMonitorContent()
     {
         let topLeft = getScreenPosFromObject([-0.7, 0.7, 1, 1], selectedObject);
         let bottomRight = getScreenPosFromObject([0.7, -0.2, 1, 1], selectedObject);
@@ -640,10 +636,10 @@ async function runEngine()
         divMonitorDesc.innerHTML = desc;
 
         //Resize monitor text box
-        divMonitorElement.style.left = Math.floor(topLeft[0]) + "px";
-        divMonitorElement.style.top = Math.floor(topLeft[1]) + "px";
-        divMonitorElement.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
-        divMonitorElement.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
+        divMonitor.style.left = Math.floor(topLeft[0]) + "px";
+        divMonitor.style.top = Math.floor(topLeft[1]) + "px";
+        divMonitor.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
+        divMonitor.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
         if (startCameraAnim == false && firstClick)
         {
@@ -696,10 +692,39 @@ async function runEngine()
         }
     }
 
+    function renderClipboardContent()
+    {
+        let topLeft = getScreenPosFromObject([-.3, .3, -.15, 1], mClipBoard, false);
+        let bottomRight = getScreenPosFromObject([.3, -.4, .25, 1], mClipBoard, false);
+
+        //Resize monitor text box
+        divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
+        divClipboard.style.top = Math.floor(topLeft[1]) + "px";
+        divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
+        divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
+
+        divClipboard.innerHTML = `
+        Hello World!
+        `;
+
+        /*
+        if (showDescription)
+        {
+            divClipboard.classList.remove("anim-fadein");
+            divClipboard.classList.add("anim-fadein");
+            divClipboard.style.visibility = "visible";
+        }
+        else
+        {
+            divClipboard.classList.remove("anim-fadein");
+            divClipboard.style.visibility = "hidden";
+        }
+        */
+    }
+
     let mouseX = -1;
     let mouseY = -1;
     let prevTime = 0;
-    let slideIn = false;
     
     function update(time) //Called every frame and renders the scene
     {
@@ -777,8 +802,9 @@ async function runEngine()
         renderObjectPicking(mShader, mMonitor, pickID);
         renderObjectPicking(mShader, mMonitor2, pickID);
         renderObjectPicking(mShader, mMonitor3, pickID);
+
         //Monitor Text Rendering
-        renderMonitorText();
+        renderMonitorContent();
 
         //Update Model Positions
         const sinAmplitude = 0.00025;
@@ -808,6 +834,7 @@ async function runEngine()
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
+
         //Scene Objects Rendering
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
 
@@ -826,6 +853,9 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPen.getModelMatrix());
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPen.getModelMatrix()))));
         mPen.render(mShader);
+
+        //Clipboard Text Rendering
+        renderClipboardContent();
 
         //Animations
         if (startClipboardAnim)
@@ -860,7 +890,7 @@ async function runEngine()
     }
     requestAnimationFrame(update);
 
-    //Canvas Resizing
+    //--------------------Canvas Resizing--------------------
     function resizeCanvasToDisplaySize() 
     {
         var width = gl.canvas.clientWidth;
@@ -873,8 +903,9 @@ async function runEngine()
             gl.canvas.height = height;
         }
     }
+    //--------------------End Canvas Resizing--------------------
 
-    //Event Listeners
+    //--------------------Event Listeners--------------------
     let touchMoved = false;
 
     gl.canvas.addEventListener("touchstart", (event) => {
@@ -911,6 +942,29 @@ async function runEngine()
     clipboardLeftButton.addEventListener("click", clipboardLeftClick);
     clipboardRightButton.addEventListener("click", clipboardRightClick);
 }
+//--------------------End Event Listeners--------------------
+
+//--------------------Helper Math Functions--------------------
+function easeInOut(t)
+{
+    if (t <= 0.5)
+    {
+        return 2.0 * t * t;
+    }
+    t -= 0.5;
+    return 2.0 * t * (1.0 - t) + 0.5;
+}
+
+function degToRad(degrees)
+{
+    return (degrees * Math.PI) / 180.0;
+}
+
+function radToDeg(rads)
+{
+    return rads * (180.0 / Math.PI);
+}
+//--------------------End Helpers--------------------
 
 try
 {

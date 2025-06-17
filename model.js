@@ -1,35 +1,35 @@
  import gl from "./engine.js"
- import objectLoader from "./objectLoader.js"
+ import objectLoader from "./modelLoader.js"
 
 function loadTexture(path)
 {
     if (path == null) { return 0; }
 
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures for WebGL
 
     const texture = gl.createTexture();
-
     const image = new Image();
+    
     image.onload = () => {
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.generateMipmap(gl.TEXTURE_2D);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.generateMipmap(gl.TEXTURE_2D);
     };
     image.src = path;
 
     return texture;
 }
 
-export default class Object
+export default class Model
 {
-    constructor(objPath, albedoPath, normalPath, metallicPath, roughnessPath, aoPath)
+    constructor(modelPath, albedoPath, normalPath, metallicPath, roughnessPath, aoPath)
     {
-        this.objPath = objPath;
+        this.modelPath = modelPath;
         this.albedoPath = albedoPath || null;
         this.normalPath = normalPath || null;
         this.metallicPath = metallicPath || null;
@@ -45,7 +45,7 @@ export default class Object
         this.modelMatrix = mat4.create();
 
         const mLoader = new objectLoader;
-        await mLoader.loadObject(this.objPath);
+        await mLoader.loadModel(this.modelPath);
 
         this.vertexData = mLoader.getVertices();
         this.normalData = mLoader.getNormals();
@@ -96,17 +96,21 @@ export default class Object
         gl.bindVertexArray(null);
 
         //Load Textures
-
         this.albedo = loadTexture(this.albedoPath);
         this.normal = loadTexture(this.normalPath);
         this.metallic = loadTexture(this.metallicPath);
         this.roughness = loadTexture(this.roughnessPath);
         this.ao = loadTexture(this.aoPath);
 
-        this.defaultTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.defaultTexture);
-        const data = new Uint8Array([0, 0, 0, 255]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        this.defaultWhite = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.defaultWhite);
+        const whiteData = new Uint8Array([255, 255, 255, 255]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, whiteData);
+
+        this.defaultBlack = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.defaultBlack);
+        const blackData = new Uint8Array([0, 0, 0, 255]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, blackData);
     }
 
     render(shader = null)
@@ -117,23 +121,23 @@ export default class Object
         {
             gl.uniform1i(shader.getUniformLocation("albedoMap"), 0);
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.albedo || this.defaultTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.albedo || this.defaultWhite);
 
             gl.uniform1i(shader.getUniformLocation("normalMap"), 1);
             gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, this.normal || this.defaultTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.normal || this.defaultWhite);
 
             gl.activeTexture(gl.TEXTURE2);
             gl.uniform1i(shader.getUniformLocation("metallicMap"), 2);
-            gl.bindTexture(gl.TEXTURE_2D, this.metallic || this.defaultTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.metallic || this.defaultBlack);
 
             gl.uniform1i(shader.getUniformLocation("roughnessMap"), 3);
             gl.activeTexture(gl.TEXTURE3);
-            gl.bindTexture(gl.TEXTURE_2D, this.roughness || this.defaultTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.roughness || this.defaultBlack);
 
             gl.uniform1i(shader.getUniformLocation("aoMap"), 4);
             gl.activeTexture(gl.TEXTURE4);
-            gl.bindTexture(gl.TEXTURE_2D, this.ao || this.defaultTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.ao || this.defaultWhite);
         } 
 
         gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);

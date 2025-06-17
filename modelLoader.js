@@ -1,16 +1,10 @@
-export default class objectLoader
+export default class modelLoader
 {
-    async loadObject(path)
+    async loadModel(path)
     {
         const response = await fetch (path);
         const text = await response.text();
-
-        this.result = await this.parseObj(text);
-        //Testing
-        //console.log(this.result[0] + "\n");
-        //console.log(this.result[1] + "\n");
-        //console.log(this.result[2] + "\n");
-        //console.log(this.result[3] + "\n");
+        this.result = await this.parseModel(text);
     }
 
     getVertices() { return this.result[0]; }
@@ -19,7 +13,7 @@ export default class objectLoader
     getIndices() { return this.result[3]; }
     getTangents() { return this.result[4]; }
 
-    async parseObj(data)
+    async parseModel(data)
     {
         const lines = data.split("\n");
         

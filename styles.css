@@ -2,20 +2,31 @@ html, head, body
 {
     margin: 0 !important;
     padding: 0 !important;
+    width: 100vw;
+    height: 200vh;
+    overflow-x: hidden;
     background-color: #131314;
+}
+
+#container
+{
+    width: 100vw;
+    height: 200vh;
 }
 
 #main-canvas
 {
     position: absolute;
-    width: 100%;
-    height: 200%;
+    width: 100vw;
+    height: 200vh;
     image-rendering: crisp-edges;
 }
 
 #overlay
 {
     position: relative;
+    width: 100vw;
+    height: 200vh;
     pointer-events: none;
 }
 
@@ -31,15 +42,26 @@ html, head, body
     text-decoration: underline;
 }
 
-.floating-div
+.floating-div-monitor
 {
     position: absolute;
-    color: #33FF00;
     text-align: center;
+    color: #33FF00;
     font-size: 2.5vh;
     font-weight: 100;
     font-family: "Cascadia Code", monospace;
-    /*border: 2px solid #33FF00;*/
+    border: 2px solid #33FF00;
+}
+
+.floating-div-clipboard
+{
+    position: absolute;
+    text-align: center;
+    color: black;
+    font-size: 2.5vh;
+    font-weight: 100;
+    font-family: "Cascadia Code", monospace;
+    border: 1px solid black;
 }
 
 h1
@@ -90,11 +112,11 @@ h2
 {
     visibility: hidden;
     position: absolute;
-    font-size: 4vw !important;
+    font-size: 10vh !important;
     color: white;
     text-align: center;
     width: 100%;
-    bottom: 5%;
+    bottom: 2%;
 }
 
 .fa-chevron-left, .fa-chevron-right
@@ -115,13 +137,13 @@ h2
 
 .left-btn
 {
-    left: 25%;
+    left: 30%;
     top: 150%;  
 }
 
 .right-btn
 {
-    right: 25%;
+    right: 30%;
     top: 150%;
 }
 
@@ -185,7 +207,7 @@ h2
 
 @keyframes fadeout-in
 {
-    0% { opacity: 1; }
+    0% { opacity: 0.8; }
     20% { opacity: 0; }
     50% { opacity: 0; }
     100% { opacity: 1; }

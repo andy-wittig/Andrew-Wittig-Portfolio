@@ -354,7 +354,7 @@ gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
 let deltaTime = 0;
 async function runEngine()
 {
-    mMonitor.setName("<b>Who am I?</b>");
+    mMonitor.setName("<b>About Me</b>");
     mMonitor.setDescription("Driven to creating immersive experiences with stunning visuals.");
     mMonitor2.setName("<b>Projects</b>");
     mMonitor2.setDescription(`
@@ -367,7 +367,7 @@ async function runEngine()
     mMonitor3.setName("<b>Skills</b>");
     mMonitor3.setDescription(`
     <ul>
-    <li>C++</li>
+    <li>C++, Python</li>
     <li>WebGL, OpenGL</li>
     <li>Javascript, HTML, CSS</li>
     </ul> 
@@ -401,7 +401,7 @@ async function runEngine()
     const cameraRadius = 10;
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
     //Clipboard Camera
-    const camera2Fov = 70;
+    const camera2Fov = 65;
     const cameraView2 = [[0, 1.6, 3.0], [0, .3, .8], [0, 1, 0]];
     
     const projectionMatrix = mat4.create();
@@ -694,8 +694,8 @@ async function runEngine()
 
     function renderClipboardContent()
     {
-        let topLeft = getScreenPosFromObject([-.3, .3, -.15, 1], mClipBoard, false);
-        let bottomRight = getScreenPosFromObject([.3, -.4, .25, 1], mClipBoard, false);
+        let topLeft = getScreenPosFromObject([-.32, .3, -.15, 1], mClipBoard, false);
+        let bottomRight = getScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
 
         //Resize monitor text box
         divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
@@ -704,7 +704,14 @@ async function runEngine()
         divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
         divClipboard.innerHTML = `
-        Hello World!
+        <p>
+        <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
+        <b>Hey there, I'm Andy.</b><br></br>
+        I've been programming, drawing, and designing projects since I was 12.
+        I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
+        <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
+        Since that time, that same passion and excitement for learning and creating has stuck with me till this day.
+        </p>
         `;
 
         /*

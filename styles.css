@@ -10,6 +10,8 @@ html, head, body
 
 #container
 {
+    display: inline-block;
+    background-image: linear-gradient(to bottom, rgb(0, 0, 0), #131314);
     width: 100vw;
     height: 200vh;
 }
@@ -24,7 +26,7 @@ html, head, body
 
 #overlay
 {
-    position: relative;
+    display: inline-block;
     width: 100vw;
     height: 200vh;
     pointer-events: none;
@@ -50,18 +52,34 @@ html, head, body
     font-size: 2.5vh;
     font-weight: 100;
     font-family: "Cascadia Code", monospace;
-    border: 2px solid #33FF00;
+    /*border: 2px solid #33FF00;*/
 }
 
 .floating-div-clipboard
 {
     position: absolute;
-    text-align: center;
     color: black;
     font-size: 2.5vh;
     font-weight: 100;
     font-family: "Cascadia Code", monospace;
-    border: 1px solid black;
+    /*border: 1px solid black;*/
+}
+
+p
+{
+    margin: 0;
+    color: black;
+    text-align: left;
+    font-size: 2.4vh;
+    font-family: "Cascadia Code", monospace;
+}
+
+.img
+{
+    width: 20vh;
+    padding-right: 1vh;
+    padding-top: 1vh;
+    float: left;
 }
 
 h1
@@ -116,6 +134,7 @@ h2
     color: white;
     text-align: center;
     width: 100%;
+    left: 0;
     bottom: 2%;
 }
 

@@ -404,7 +404,7 @@ async function runEngine()
     const cameraStartRadius = 12;
     const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 2.0, (cameraStartRadius) * Math.cos(degToRad(0))];
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
-    const cameraFov = 60;
+    const cameraFov = 45;
     const cameraRadius = 10;
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
 
@@ -608,11 +608,12 @@ async function runEngine()
 
         clipspace[0] /= clipspace[3];
         clipspace[1] /= clipspace[3];
+        //console.log(clipspace[0] + ", " + clipspace[1]);
 
         var screenX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
-        var screenY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.clientHeight / 2; //divide by 2 since canvas styling height is 200%;
+        var screenY = (clipspace[1] * -0.5 + 0.5) * (gl.canvas.clientHeight / 2); //divide by 2 since canvas styling height is 200%;
 
-        return [screenX, screenY]; 
+        return [screenX, screenY];
     }
 
     function updateCamera(view, fov)
@@ -631,8 +632,8 @@ async function runEngine()
 
     function renderMonitorText()
     {
-        let topLeft = getScreenPosFromObject([-0.8, 1.2, 0.8, 1], selectedObject);
-        let bottomRight = getScreenPosFromObject([0.8, 0, 0.8, 1], selectedObject);
+        let topLeft = getScreenPosFromObject([-1, 1, 1, 1], selectedObject);
+        let bottomRight = getScreenPosFromObject([1, -1, 1, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
@@ -718,9 +719,9 @@ async function runEngine()
         resizeCanvasToDisplaySize();
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
         //Scene 1 Viewport
-        const halfHeight = gl.drawingBufferHeight / 2 | 0;
-        gl.viewport(0, halfHeight, gl.drawingBufferWidth, gl.drawingBufferHeight - halfHeight);
-        gl.scissor(0, halfHeight, gl.drawingBufferWidth, gl.drawingBufferHeight - halfHeight);
+        const halfHeight = gl.canvas.clientHeight / 2 | 0;
+        gl.viewport(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
+        gl.scissor(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
         //Update Camera and Animate
         if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
         updateCamera(cameraView, cameraFov);
@@ -790,8 +791,8 @@ async function runEngine()
 
         //--------------------Render Scene 2--------------------
         //Scene 2 Viewport
-        gl.viewport(0, 0, gl.drawingBufferWidth, halfHeight);
-        gl.scissor(0, 0, gl.drawingBufferWidth, halfHeight);
+        gl.viewport(0, 0, gl.canvas.clientWidth, halfHeight);
+        gl.scissor(0, 0, gl.canvas.clientWidth, halfHeight);
 
         updateCamera(cameraView2, camera2Fov);
 
@@ -865,6 +866,7 @@ async function runEngine()
     {
         var width = gl.canvas.clientWidth;
         var height = gl.canvas.clientHeight;
+
         if (gl.canvas.width != width ||
             gl.canvas.height != height) 
         {

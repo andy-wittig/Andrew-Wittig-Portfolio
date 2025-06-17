@@ -402,9 +402,9 @@ async function runEngine()
     let firstClick = false;
 
     const cameraStartRadius = 12;
-    const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 2.0, (cameraStartRadius) * Math.cos(degToRad(0))];
+    const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 1.5, (cameraStartRadius) * Math.cos(degToRad(0))];
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
-    const cameraFov = 45;
+    const cameraFov = 60;
     const cameraRadius = 10;
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
 
@@ -455,7 +455,7 @@ async function runEngine()
         animStepPosition[2] = animStartPosition[2] + (position[2] - animStartPosition[2]) * easedProgress;
 
         cameraView[0][0] = animStepRadius * Math.sin(degToRad(animStepRotation));
-        cameraView[0][1] = 2.0;
+        cameraView[0][1] = 1.5;
         cameraView[0][2] = animStepRadius * Math.cos(degToRad(animStepRotation));
         cameraView[1][0] = animStepPosition[0];
         cameraView[1][1] = animStepPosition[1];
@@ -608,7 +608,6 @@ async function runEngine()
 
         clipspace[0] /= clipspace[3];
         clipspace[1] /= clipspace[3];
-        //console.log(clipspace[0] + ", " + clipspace[1]);
 
         var screenX = (clipspace[0] * 0.5 + 0.5) * gl.canvas.clientWidth;
         var screenY = (clipspace[1] * -0.5 + 0.5) * (gl.canvas.clientHeight / 2); //divide by 2 since canvas styling height is 200%;
@@ -632,8 +631,8 @@ async function runEngine()
 
     function renderMonitorText()
     {
-        let topLeft = getScreenPosFromObject([-1, 1, 1, 1], selectedObject);
-        let bottomRight = getScreenPosFromObject([1, -1, 1, 1], selectedObject);
+        let topLeft = getScreenPosFromObject([-0.7, 0.7, 1, 1], selectedObject);
+        let bottomRight = getScreenPosFromObject([0.7, -0.2, 1, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();

@@ -22,7 +22,6 @@ export default gl;
 //--------------------HTML Integration--------------------
 //Containers
 const divContainer = document.getElementById("container");
-const divOverlay = document.getElementById("overlay");
 //Buttons
 const clipboardLeftButton = document.createElement("button");
 clipboardLeftButton.className = "left-btn";
@@ -51,8 +50,8 @@ divContainer.append(clipboardRightButton);
 
 divMonitor.append(divMonitorName);
 divMonitor.append(divMonitorDesc);
-divOverlay.append(divMonitor);
-divOverlay.append(divClipboard);
+divContainer.append(divMonitor);
+divContainer.append(divClipboard);
 //--------------------End HTML--------------------
 
 //Shader Definitions
@@ -355,7 +354,7 @@ let deltaTime = 0;
 async function runEngine()
 {
     mMonitor.setName("<b>About Me</b>");
-    mMonitor.setDescription("Driven to creating immersive experiences with stunning visuals.");
+    mMonitor.setDescription("I'm driven to create emmersive experiences within websites, programs, and games.");
     mMonitor2.setName("<b>Projects</b>");
     mMonitor2.setDescription(`
     <ul>
@@ -508,6 +507,8 @@ async function runEngine()
         {
             clipboardLeftButton.classList.remove("anim-fadeout-in");
             clipboardLeftButton.classList.add("anim-fadeout-in");
+            clipboardRightButton.classList.remove("anim-fadeout-in");
+            clipboardRightButton.classList.add("anim-fadeout-in");
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
             slideIn = false; //when false the clipboard slides out to the left
@@ -518,6 +519,8 @@ async function runEngine()
     {
         if (!startClipboardAnim) 
         {
+            clipboardLeftButton.classList.remove("anim-fadeout-in");
+            clipboardLeftButton.classList.add("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.add("anim-fadeout-in");
             clipboardAnimProgress = 0;
@@ -950,9 +953,11 @@ async function runEngine()
         mouseY = event.changedTouches[0].clientY - rect.top;
         isLeftMouseDown = true;
     });
+
     gl.canvas.addEventListener("touchmove", (event) => {
         isLeftMouseDown = false;
     });
+
     gl.canvas.addEventListener("touchend", (event) => {
         isLeftMouseDown = false;
     });
@@ -977,6 +982,16 @@ async function runEngine()
 
     clipboardLeftButton.addEventListener("click", clipboardLeftClick);
     clipboardRightButton.addEventListener("click", clipboardRightClick);
+
+    document.addEventListener("scroll", (event) => {
+        let currentScrollPos = window.scrollY;
+        let maxScrollY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        let scrolledPercent = currentScrollPos / maxScrollY;
+        const divOverlayFade = document.getElementById("overlay-fade");
+        divOverlayFade.style.backgroundColor = `rgb(19, 19, 20, ${scrolledPercent * 1.2})`;
+        iconAnglesDown.style.opacity = 1 - scrolledPercent;
+        console.log(scrolledPercent);
+    });
 }
 //--------------------End Event Listeners--------------------
 

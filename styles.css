@@ -11,7 +11,7 @@ html, head, body
 #container
 {
     display: inline-block;
-    background-image: linear-gradient(to bottom, rgb(0, 0, 0), #131314);
+    background-image: #131314;
     width: 100vw;
     height: 200vh;
 }
@@ -24,22 +24,29 @@ html, head, body
     image-rendering: crisp-edges;
 }
 
-#overlay
+#overlay-fade
 {
-    display: inline-block;
+    position: absolute;
+    top: 0;
     width: 100vw;
-    height: 200vh;
+    height: 100vh;
     pointer-events: none;
 }
 
-#overlay a
+.title
 {
-    pointer-events: auto;
+    z-index: 1;
+    position: absolute;
+    width: 100vw;
+}
+
+.title a
+{
     text-decoration: none;
     color: white;
 }
 
-#overlay a:hover
+.title a:hover
 {
     text-decoration: underline;
 }
@@ -52,6 +59,7 @@ html, head, body
     font-size: 2.5vh;
     font-weight: 300;
     font-family: "Cascadia Code", monospace;
+    text-shadow: 0px 2px 2px black;
     /*border: 2px solid #33FF00;*/
 }
 
@@ -100,6 +108,7 @@ h1
     font-size: 4vw;
     font-weight: 100;
     font-family: "Cascadia Code", monospace;
+    text-align: center;
     animation: anim-bolden 6s infinite;
     animation-direction: alternate;
     animation-delay: 5s;
@@ -116,6 +125,7 @@ h2
     color: white;
     font-size: 1.8vw;
     font-weight: 300;
+    text-align: center;
     font-family: "Cascadia Code", monospace;
 }
 
@@ -140,17 +150,18 @@ h2
 {
     visibility: hidden;
     position: absolute;
-    font-size: 10vh !important;
-    color: white;
+    font-size: 12vh !important;
+    text-shadow: 0px 0.5vh black;
+    color: #33FF00;
     text-align: center;
-    width: 100%;
-    left: 0;
+    width: 100vw;
     bottom: 2%;
 }
 
 .fa-chevron-left, .fa-chevron-right
 {
     font-size: 4vw !important;
+    text-shadow: 0px 2px 2px black;
     color: white;
 }
 
@@ -162,6 +173,7 @@ h2
     text-decoration: none;
     background-color: transparent;
     padding: 40px;
+    animation: anim-grow 1.6s infinite alternate;
 }
 
 .left-btn
@@ -179,6 +191,12 @@ h2
 .left-btn:hover, .right-btn:hover
 {
     opacity: .8;
+}
+
+@keyframes anim-grow
+{
+    from { translate: scale(1); }
+    to { transform: scale(1.1); }
 }
 
 .anim-bounce-in
@@ -231,7 +249,7 @@ h2
 
 .anim-fadeout-in
 {
-    animation: fadeout-in 3s;
+    animation: fadeout-in 4s;
 }
 
 @keyframes fadeout-in

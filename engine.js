@@ -354,7 +354,7 @@ let deltaTime = 0;
 async function runEngine()
 {
     mMonitor.setName("<b>About Me</b>");
-    mMonitor.setDescription("I'm driven to create emmersive experiences within websites, programs, and games.");
+    mMonitor.setDescription("I spend my time creating emmersive experiences within websites, programs, and games.");
     mMonitor2.setName("<b>Projects</b>");
     mMonitor2.setDescription(`
     <ul>

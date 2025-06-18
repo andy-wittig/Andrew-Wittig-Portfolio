@@ -50,7 +50,7 @@ html, head, body
     text-align: center;
     color: #33FF00;
     font-size: 2.5vh;
-    font-weight: 100;
+    font-weight: 300;
     font-family: "Cascadia Code", monospace;
     /*border: 2px solid #33FF00;*/
 }
@@ -71,6 +71,7 @@ p
     color: black;
     text-align: left;
     font-size: 2.4vh;
+    font-weight: 300;
     font-family: "Cascadia Code", monospace;
 }
 

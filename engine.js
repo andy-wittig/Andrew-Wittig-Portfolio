@@ -707,10 +707,10 @@ async function runEngine()
         <p>
         <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
         <b>Hey there, I'm Andy.</b><br></br>
-        I've been programming, drawing, and designing projects since I was 12.
+        I've been programming, drawing, and designing projects since I got my first computer when I was 12.
         I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
         <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
-        Since that time, that same passion and excitement for learning and creating has stuck with me till this day.
+        Since that time, that same passion and excitement for learning and creating has followed me till this day.
         </p>
         `;
 

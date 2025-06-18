@@ -83,6 +83,15 @@ p
     float: left;
 }
 
+.border
+{
+    color: black;
+    font-size: 1.8vh;
+    font-weight: 300;
+    padding: 0.2vh;
+    border: 1px solid black;
+}
+
 h1
 {
     color: white;

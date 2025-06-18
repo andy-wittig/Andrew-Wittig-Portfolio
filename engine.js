@@ -703,16 +703,45 @@ async function runEngine()
         divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
         divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
-        divClipboard.innerHTML = `
+        const aboutPages = new Array(3);
+
+        aboutPages[0] = `
         <p>
-        <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
-        <b>Hey there, I'm Andy.</b><br></br>
-        I've been programming, drawing, and designing projects since I got my first computer when I was 12.
-        I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
-        <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
-        Since that time, that same passion and excitement for learning and creating has followed me till this day.
+            <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
+            <b>Hey there, I'm Andy.</b><br></br>
+            I've been programming, drawing, and designing projects since I got my first computer when I was 12.
+            I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
+            <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
+            Since that time, the same passion and excitement for learning and creating has followed me untill this day.
         </p>
         `;
+
+        const skillsPages = new Array(3);
+
+        skillsPages[0] = `
+        <p>
+            <b><u>Skills Report</u></b><br></br>
+            Languages
+            <div class="border">
+                <ul>
+                <li><b>C++</b>: Built an OpenGL rendering engine for a space exploration experience.</li>
+                <li><b>Python</b>: Developed a Blackjack program using Tkinter.</li>
+                <li><b>HTML, CSS, Javascript</b>: Created an emmersive WebGL based PBR rendering engine for this portfolio!</li>
+                <li><b>GDscript</b>: Independently published a platforming videogame made in the Godot engine.</li>
+                </ul>
+            </div>
+            General
+            <div class="border">
+                Product Marketing and Launches, Computer Graphics, Game Design, Multiplayer Networking, Micro-controllers
+            </div>
+            Software
+            <div class="border">
+                Visual Studios, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, Davinci Resolve, Adobe Fresco
+            </div>
+        </p>
+        `;
+
+        divClipboard.innerHTML = skillsPages[0];
 
         /*
         if (showDescription)

@@ -448,7 +448,7 @@ async function runEngine()
     //--------------------Clipboard Animation--------------------
     const clipboardSlideLeftPos = [-4, 1, 2];
     const clipboardSlideRightPos = [4, 1, 2];
-
+    let pageCount = 0;
     let clipboardAnimProgress = 0;
     let startClipboardAnim = false;
     let flipSlide = false;
@@ -457,21 +457,24 @@ async function runEngine()
     function clipboardAnimate(clipboardObject)
     {
         let startPos, endPos;
+        let pageIt = 0;
 
-        if (!slideIn && !flipSlide)
+        if (!slideIn && !flipSlide) //Left button clicked
         {
             startPos = clipboardStartingPos;
             endPos = clipboardSlideLeftPos;
+            pageIt = -1;
         }
         else if (!slideIn && flipSlide)
         {
             startPos = clipboardSlideRightPos;
             endPos = clipboardStartingPos;
         }
-        else if (slideIn && !flipSlide)
+        else if (slideIn && !flipSlide) //Right button
         {
             startPos = clipboardStartingPos;
             endPos = clipboardSlideRightPos;
+            pageIt = 1;
         }
         else if (slideIn && flipSlide)
         {
@@ -493,6 +496,7 @@ async function runEngine()
         if (clipboardAnimProgress >= 0.5 && !flipSlide)
         {
             flipSlide = true;
+            pageCount += pageIt;
         }
 
         if (clipboardAnimProgress == 1) 
@@ -509,6 +513,7 @@ async function runEngine()
             clipboardLeftButton.classList.add("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.add("anim-fadeout-in");
+
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
             slideIn = false; //when false the clipboard slides out to the left
@@ -523,6 +528,7 @@ async function runEngine()
             clipboardLeftButton.classList.add("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.add("anim-fadeout-in");
+
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
             slideIn = true;
@@ -721,7 +727,7 @@ async function runEngine()
 
         const skillsPages = new Array(3);
 
-        skillsPages[0] = `
+        aboutPages[1] = `
         <p>
             <b><u>Skills Report</u></b><br></br>
             Languages
@@ -744,7 +750,9 @@ async function runEngine()
         </p>
         `;
 
-        divClipboard.innerHTML = skillsPages[0];
+        pageCount = Math.max(0, Math.min(pageCount, aboutPages.length - 1)); //clamp pages
+
+        divClipboard.innerHTML = aboutPages[pageCount];
 
         /*
         if (showDescription)

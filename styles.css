@@ -168,6 +168,7 @@ h2
 
 .left-btn, .right-btn
 {
+    z-index: 1;
     position: absolute;
     cursor: pointer;
     border: none;
@@ -192,6 +193,11 @@ h2
 .left-btn:hover, .right-btn:hover
 {
     opacity: .8;
+}
+
+.left-btn:disabled, .right-btn:disabled
+{
+    opacity: .4;
 }
 
 @keyframes anim-grow

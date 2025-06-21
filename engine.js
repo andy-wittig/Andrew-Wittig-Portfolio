@@ -355,6 +355,7 @@ async function runEngine()
 {
     mMonitor.setName("<b>About Me</b>");
     mMonitor.setDescription("I spend my time creating emmersive experiences within websites, programs, and games.");
+
     mMonitor2.setName("<b>Projects</b>");
     mMonitor2.setDescription(`
     <ul>
@@ -363,6 +364,7 @@ async function runEngine()
     <li>Project 3</li>
     </ul> 
     `);
+    
     mMonitor3.setName("<b>Skills</b>");
     mMonitor3.setDescription(`
     <ul>
@@ -566,6 +568,7 @@ async function runEngine()
                 animPositionFinal = Model.getPosition();
                 animRadiusFinal = cameraRadius;
                 selectedObject = Model;
+                pageCount = 0; //Reset page count
 
                 if (!firstClick)
                 {
@@ -701,6 +704,52 @@ async function runEngine()
         }
     }
 
+    //--------------------Clipboard--------------------
+
+    const aboutPages = new Array(3);
+    const skillPages = new Array(3);
+    const projectPages = new Array(3);
+
+    const pageID = [
+        mMonitor.getID(), //About page
+        mMonitor2.getID(), //Projcet page
+        mMonitor3.getID() //Skill page
+    ];
+
+    aboutPages[0] = `
+    <p>
+        <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
+        <b>Hey there, I'm Andy.</b><br></br>
+        I've been programming, drawing, and designing projects since I got my first computer when I was 12.
+        I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
+        <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
+        Since that time, the same passion and excitement for learning and creating has followed me untill this day.
+    </p>
+    `;
+
+    skillPages[0] = `
+    <p>
+        <b><u>Skills Report</u></b><br></br>
+        Languages
+        <div class="border">
+            <ul>
+            <li><b>C++</b>: Built an OpenGL rendering engine for a space exploration experience.</li>
+            <li><b>Python</b>: Developed a Blackjack program using Tkinter.</li>
+            <li><b>HTML, CSS, Javascript</b>: Created an emmersive WebGL based PBR rendering engine for this portfolio!</li>
+            <li><b>GDscript</b>: Independently published a platforming videogame made in the Godot engine.</li>
+            </ul>
+        </div>
+        General
+        <div class="border">
+            Product Marketing and Launches, Computer Graphics, Game Design, Multiplayer Networking, Micro-controllers
+        </div>
+        Software
+        <div class="border">
+            Visual Studios, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, Davinci Resolve, Adobe Fresco
+        </div>
+    </p>
+    `;
+
     function renderClipboardContent()
     {
         let topLeft = getScreenPosFromObject([-.32, .3, -.15, 1], mClipBoard, false);
@@ -711,63 +760,48 @@ async function runEngine()
         divClipboard.style.top = Math.floor(topLeft[1]) + "px";
         divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
         divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
-
-        const aboutPages = new Array(3);
-
-        aboutPages[0] = `
-        <p>
-            <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
-            <b>Hey there, I'm Andy.</b><br></br>
-            I've been programming, drawing, and designing projects since I got my first computer when I was 12.
-            I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
-            <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
-            Since that time, the same passion and excitement for learning and creating has followed me untill this day.
-        </p>
-        `;
-
-        const skillsPages = new Array(3);
-
-        aboutPages[1] = `
-        <p>
-            <b><u>Skills Report</u></b><br></br>
-            Languages
-            <div class="border">
-                <ul>
-                <li><b>C++</b>: Built an OpenGL rendering engine for a space exploration experience.</li>
-                <li><b>Python</b>: Developed a Blackjack program using Tkinter.</li>
-                <li><b>HTML, CSS, Javascript</b>: Created an emmersive WebGL based PBR rendering engine for this portfolio!</li>
-                <li><b>GDscript</b>: Independently published a platforming videogame made in the Godot engine.</li>
-                </ul>
-            </div>
-            General
-            <div class="border">
-                Product Marketing and Launches, Computer Graphics, Game Design, Multiplayer Networking, Micro-controllers
-            </div>
-            Software
-            <div class="border">
-                Visual Studios, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, Davinci Resolve, Adobe Fresco
-            </div>
-        </p>
-        `;
-
-        pageCount = Math.max(0, Math.min(pageCount, aboutPages.length - 1)); //clamp pages
-
-        divClipboard.innerHTML = aboutPages[pageCount];
-
-        /*
-        if (showDescription)
+        
+        for (let i = 0; i < pageID.length; i++)
         {
-            divClipboard.classList.remove("anim-fadein");
-            divClipboard.classList.add("anim-fadein");
-            divClipboard.style.visibility = "visible";
+            if (pageID[i] == selectedObject.getID())
+            {
+                switch (i)
+                {
+                    case 0: //About page
+                        pageCount = Math.max(0, Math.min(pageCount, aboutPages.length - 1)); //clamp pages
+
+                        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
+                        else { clipboardLeftButton.disabled = false;}
+                        if (pageCount == aboutPages.length - 1) { clipboardRightButton.disabled = true; }
+                        else { clipboardRightButton.disabled = false;}
+
+                        divClipboard.innerHTML = aboutPages[pageCount];
+                        break;
+                    case 1: //Project page
+                        pageCount = Math.max(0, Math.min(pageCount, projectPages.length - 1)); //clamp pages
+
+                        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
+                        else { clipboardLeftButton.disabled = false;}
+                        if (pageCount == projectPages.length - 1) { clipboardRightButton.disabled = true; }
+                        else { clipboardRightButton.disabled = false;}
+
+                        divClipboard.innerHTML = projectPages[pageCount];
+                        break;
+                    case 2: //Skill page
+                        pageCount = Math.max(0, Math.min(pageCount, skillPages.length - 1)); //clamp pages
+
+                        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
+                        else { clipboardLeftButton.disabled = false;}
+                        if (pageCount == skillPages.length - 1) { clipboardRightButton.disabled = true; }
+                        else { clipboardRightButton.disabled = false;}
+
+                        divClipboard.innerHTML = skillPages[pageCount];
+                        break;
+                }
+            }
         }
-        else
-        {
-            divClipboard.classList.remove("anim-fadein");
-            divClipboard.style.visibility = "hidden";
-        }
-        */
     }
+    //--------------------End Clipboard--------------------
 
     let mouseX = -1;
     let mouseY = -1;
@@ -991,14 +1025,15 @@ async function runEngine()
     clipboardLeftButton.addEventListener("click", clipboardLeftClick);
     clipboardRightButton.addEventListener("click", clipboardRightClick);
 
-    document.addEventListener("scroll", (event) => {
+    document.addEventListener("scroll", () => {
         let currentScrollPos = window.scrollY;
         let maxScrollY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         let scrolledPercent = currentScrollPos / maxScrollY;
         const divOverlayFade = document.getElementById("overlay-fade");
-        divOverlayFade.style.backgroundColor = `rgb(19, 19, 20, ${scrolledPercent * 1.2})`;
-        iconAnglesDown.style.opacity = 1 - scrolledPercent;
-        console.log(scrolledPercent);
+        const fadeMultiplier = 1.4;
+        divOverlayFade.style.backgroundColor = `rgb(19, 19, 20, ${scrolledPercent * fadeMultiplier})`;
+        iconAnglesDown.style.opacity = 1 - scrolledPercent * fadeMultiplier;
+        //console.log(scrolledPercent); debug
     });
 }
 //--------------------End Event Listeners--------------------

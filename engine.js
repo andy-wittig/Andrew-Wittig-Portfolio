@@ -22,6 +22,7 @@ export default gl;
 //--------------------HTML Integration--------------------
 //Containers
 const divContainer = document.getElementById("container");
+const divPageIndicator = document.getElementById("page-indicator");
 //Buttons
 const clipboardLeftButton = document.createElement("button");
 clipboardLeftButton.className = "left-btn";
@@ -499,6 +500,7 @@ async function runEngine()
         {
             flipSlide = true;
             pageCount += pageIt;
+            updatePage();
         }
 
         if (clipboardAnimProgress == 1) 
@@ -569,6 +571,7 @@ async function runEngine()
                 animRadiusFinal = cameraRadius;
                 selectedObject = Model;
                 pageCount = 0; //Reset page count
+                updatePage();
 
                 if (!firstClick)
                 {
@@ -621,18 +624,6 @@ async function runEngine()
             var screenY = ((clipspace[1] * -0.5 + 0.5) * (gl.canvas.clientHeight / 2)) + (gl.canvas.clientHeight / 2);
 
         return [screenX, screenY];
-    }
-
-    function updateCamera(view, fov)
-    {
-        let effectiveHeight = gl.canvas.clientHeight / 2;
-        let fieldOfView = degToRad(fov);
-        let zNear = 0.1;
-        let zFar = 100.0;
-        let aspect = gl.canvas.clientWidth / effectiveHeight;
-
-        mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-        mat4.lookAt(viewMatrix, view[0], view[1], view[2]);
     }
 
     let showDescription = false;
@@ -705,7 +696,6 @@ async function runEngine()
     }
 
     //--------------------Clipboard--------------------
-
     const aboutPages = new Array(3);
     const skillPages = new Array(3);
     const projectPages = new Array(3);
@@ -750,17 +740,11 @@ async function runEngine()
     </p>
     `;
 
-    function renderClipboardContent()
+    function updatePage()
     {
-        let topLeft = getScreenPosFromObject([-.32, .3, -.15, 1], mClipBoard, false);
-        let bottomRight = getScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
+        divPageIndicator.replaceChildren();
+        let indicators = divPageIndicator.children;
 
-        //Resize monitor text box
-        divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
-        divClipboard.style.top = Math.floor(topLeft[1]) + "px";
-        divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
-        divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
-        
         for (let i = 0; i < pageID.length; i++)
         {
             if (pageID[i] == selectedObject.getID())
@@ -775,7 +759,15 @@ async function runEngine()
                         if (pageCount == aboutPages.length - 1) { clipboardRightButton.disabled = true; }
                         else { clipboardRightButton.disabled = false;}
 
+                        for (let i = 0; i < aboutPages.length; i++)
+                        {
+                            const indicatorBullet = document.createElement("span");
+                            divPageIndicator.append(indicatorBullet);
+                            indicatorBullet.innerHTML = "&#8226;";
+                        }
+                        indicators[pageCount].style.color = "#33FF00";
                         divClipboard.innerHTML = aboutPages[pageCount];
+
                         break;
                     case 1: //Project page
                         pageCount = Math.max(0, Math.min(pageCount, projectPages.length - 1)); //clamp pages
@@ -785,7 +777,15 @@ async function runEngine()
                         if (pageCount == projectPages.length - 1) { clipboardRightButton.disabled = true; }
                         else { clipboardRightButton.disabled = false;}
 
+                        for (let i = 0; i < projectPages.length; i++)
+                        {
+                            const indicatorBullet = document.createElement("span");
+                            divPageIndicator.append(indicatorBullet);
+                            indicatorBullet.innerHTML = "&#8226;";
+                        }
+                        indicators[pageCount].style.color = "#33FF00";
                         divClipboard.innerHTML = projectPages[pageCount];
+
                         break;
                     case 2: //Skill page
                         pageCount = Math.max(0, Math.min(pageCount, skillPages.length - 1)); //clamp pages
@@ -795,13 +795,45 @@ async function runEngine()
                         if (pageCount == skillPages.length - 1) { clipboardRightButton.disabled = true; }
                         else { clipboardRightButton.disabled = false;}
 
+                        for (let i = 0; i < skillPages.length; i++)
+                        {
+                            const indicatorBullet = document.createElement("span");
+                            divPageIndicator.append(indicatorBullet);
+                            indicatorBullet.innerHTML = "&#8226;";
+                        }
+                        indicators[pageCount].style.color = "#33FF00";
                         divClipboard.innerHTML = skillPages[pageCount];
                         break;
                 }
             }
         }
     }
+    updatePage(); //update at start
+
+    function renderClipboardContent()
+    {
+        let topLeft = getScreenPosFromObject([-.32, .3, -.15, 1], mClipBoard, false);
+        let bottomRight = getScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
+
+        //Resize monitor text box
+        divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
+        divClipboard.style.top = Math.floor(topLeft[1]) + "px";
+        divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
+        divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
+    }
     //--------------------End Clipboard--------------------
+
+    function updateCamera(view, fov)
+    {
+        let effectiveHeight = gl.canvas.clientHeight / 2;
+        let fieldOfView = degToRad(fov);
+        let zNear = 0.1;
+        let zFar = 100.0;
+        let aspect = gl.canvas.clientWidth / effectiveHeight;
+
+        mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+        mat4.lookAt(viewMatrix, view[0], view[1], view[2]);
+    }
 
     let mouseX = -1;
     let mouseY = -1;

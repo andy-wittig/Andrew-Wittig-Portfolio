@@ -63,6 +63,7 @@ const mConvolutionShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", 
 const mPrefilterShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentPrefilterShaderSource.glsl");
 const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentBrdfShaderSource.glsl");
 const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
+const mNoiseShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentNoiseShaderSource.glsl");
 
 //Model Definitions
 const mMonitor = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
@@ -327,6 +328,7 @@ function assignUniqueID()
 await mPickingShader.Initialize();
 await mShader.Initialize();
 await mSkyboxShader.Initialize();
+await mNoiseShader.Initialize();
 
 await mMonitor.Initialize();
 await mMonitor2.Initialize();
@@ -391,7 +393,7 @@ async function runEngine()
     mPen.setPosition([1.5, 0, 1]);
     mPen.rotate(degToRad(10), [0, 1, 0]);
     
-    const clipboardStartingPos = [0, 1, 2];
+    const clipboardStartingPos = [0, 1.02, 2.05];
     mClipBoard.setPosition(clipboardStartingPos);
 
     //Monitor Camera
@@ -449,8 +451,8 @@ async function runEngine()
     //--------------------End Monitor Animation--------------------
 
     //--------------------Clipboard Animation--------------------
-    const clipboardSlideLeftPos = [-4, 1, 2];
-    const clipboardSlideRightPos = [4, 1, 2];
+    const clipboardSlideLeftPos = [-4, 1.02, 2.05];
+    const clipboardSlideRightPos = [4, 1.02, 2.05];
     let pageCount = 0;
     let clipboardAnimProgress = 0;
     let startClipboardAnim = false;
@@ -485,7 +487,7 @@ async function runEngine()
             endPos = clipboardStartingPos;
         }
 
-        const animDuration = 3;
+        const animDuration = 2.6;
         clipboardAnimProgress += deltaTime / animDuration;
         clipboardAnimProgress = Math.min(clipboardAnimProgress, 1);
         let easedProgress = easeInOut(clipboardAnimProgress);
@@ -695,12 +697,12 @@ async function runEngine()
         }
     }
 
-    //--------------------Clipboard--------------------
+    //--------------------Clipboard Content--------------------
     const aboutPages = new Array(3);
     const skillPages = new Array(3);
     const projectPages = new Array(3);
 
-    const pageID = [
+    const pageIDList = [
         mMonitor.getID(), //About page
         mMonitor2.getID(), //Projcet page
         mMonitor3.getID() //Skill page
@@ -708,7 +710,7 @@ async function runEngine()
 
     aboutPages[0] = `
     <p>
-        <img src="Images/Headshot.jpg" class="img" alt="Professional headshot photo."></img>
+        <img src="Images/Headshot.jpg" class="img" loading="lazy" alt="Professional headshot photo."></img>
         <b>Hey there, I'm Andy.</b><br></br>
         I've been programming, drawing, and designing projects since I got my first computer when I was 12.
         I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
@@ -745,9 +747,9 @@ async function runEngine()
         divPageIndicator.replaceChildren();
         let indicators = divPageIndicator.children;
 
-        for (let i = 0; i < pageID.length; i++)
+        for (let i = 0; i < pageIDList.length; i++)
         {
-            if (pageID[i] == selectedObject.getID())
+            if (pageIDList[i] == selectedObject.getID())
             {
                 switch (i)
                 {
@@ -755,17 +757,17 @@ async function runEngine()
                         pageCount = Math.max(0, Math.min(pageCount, aboutPages.length - 1)); //clamp pages
 
                         if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-                        else { clipboardLeftButton.disabled = false;}
+                        else { clipboardLeftButton.disabled = false; }
                         if (pageCount == aboutPages.length - 1) { clipboardRightButton.disabled = true; }
-                        else { clipboardRightButton.disabled = false;}
+                        else { clipboardRightButton.disabled = false; }
 
                         for (let i = 0; i < aboutPages.length; i++)
                         {
                             const indicatorBullet = document.createElement("span");
                             divPageIndicator.append(indicatorBullet);
-                            indicatorBullet.innerHTML = "&#8226;";
+                            indicatorBullet.innerHTML = "&#9702;";
                         }
-                        indicators[pageCount].style.color = "#33FF00";
+                        indicators[pageCount].innerHTML = "&#8226;";
                         divClipboard.innerHTML = aboutPages[pageCount];
 
                         break;
@@ -773,17 +775,17 @@ async function runEngine()
                         pageCount = Math.max(0, Math.min(pageCount, projectPages.length - 1)); //clamp pages
 
                         if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-                        else { clipboardLeftButton.disabled = false;}
+                        else { clipboardLeftButton.disabled = false; }
                         if (pageCount == projectPages.length - 1) { clipboardRightButton.disabled = true; }
-                        else { clipboardRightButton.disabled = false;}
+                        else { clipboardRightButton.disabled = false; }
 
                         for (let i = 0; i < projectPages.length; i++)
                         {
                             const indicatorBullet = document.createElement("span");
                             divPageIndicator.append(indicatorBullet);
-                            indicatorBullet.innerHTML = "&#8226;";
+                            indicatorBullet.innerHTML = "&#9702;";
                         }
-                        indicators[pageCount].style.color = "#33FF00";
+                        indicators[pageCount].style.color = "&#8226;";
                         divClipboard.innerHTML = projectPages[pageCount];
 
                         break;
@@ -791,17 +793,17 @@ async function runEngine()
                         pageCount = Math.max(0, Math.min(pageCount, skillPages.length - 1)); //clamp pages
 
                         if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-                        else { clipboardLeftButton.disabled = false;}
+                        else { clipboardLeftButton.disabled = false; }
                         if (pageCount == skillPages.length - 1) { clipboardRightButton.disabled = true; }
-                        else { clipboardRightButton.disabled = false;}
+                        else { clipboardRightButton.disabled = false; }
 
                         for (let i = 0; i < skillPages.length; i++)
                         {
                             const indicatorBullet = document.createElement("span");
                             divPageIndicator.append(indicatorBullet);
-                            indicatorBullet.innerHTML = "&#8226;";
+                            indicatorBullet.innerHTML = "&#9702;";
                         }
-                        indicators[pageCount].style.color = "#33FF00";
+                        indicators[pageCount].style.color = "&#8226;";
                         divClipboard.innerHTML = skillPages[pageCount];
                         break;
                 }
@@ -855,10 +857,12 @@ async function runEngine()
         //Canvas resize
         resizeCanvasToDisplaySize();
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
+
         //Scene 1 Viewport
         const halfHeight = gl.canvas.clientHeight / 2 | 0;
         gl.viewport(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
         gl.scissor(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
+
         //Update Camera and Animate
         if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
         updateCamera(cameraView, cameraFov);
@@ -867,7 +871,7 @@ async function runEngine()
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
         gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
         mPickingShader.enableShader();
         gl.uniformMatrix4fv(mPickingShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
@@ -892,6 +896,15 @@ async function runEngine()
 
         //--------------------Render Scene 1--------------------
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        //Render Noise Background
+        gl.disable(gl.DEPTH_TEST);
+        mNoiseShader.enableShader();
+        gl.uniform2f(mNoiseShader.getUniformLocation("resolution"), canvas.width, canvas.height);
+        gl.uniform1f(mNoiseShader.getUniformLocation("time"), time);
+        mQuad.render();
+        gl.enable(gl.DEPTH_TEST);
+        
         mShader.enableShader();
         //Lighting Uniforms
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
@@ -935,7 +948,7 @@ async function runEngine()
         updateCamera(cameraView2, camera2Fov);
 
         gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
         //Lighting Uniforms

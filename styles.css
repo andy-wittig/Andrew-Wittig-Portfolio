@@ -173,6 +173,7 @@ h2
 .fa-chevron-left, .fa-chevron-right
 {
     font-size: 4vw !important;
+    text-align: center;
     text-shadow: 0px 2px 2px black;
     color: white;
 }
@@ -191,13 +192,13 @@ h2
 
 .left-btn
 {
-    left: 30%;
+    left: 28%;
     top: 150%;  
 }
 
 .right-btn
 {
-    right: 30%;
+    right: 28%;
     top: 150%;
 }
 

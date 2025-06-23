@@ -31,9 +31,12 @@ float noise (in vec2 st)
 void main()
 {
     vec2 st = TexCoords.xy;
-    vec2 pos = st * 35.0 + vec2(time * 0.25, 0.0);
+    vec2 pos = st * 50.0;
     float n = noise(pos);
 
-    float glow = smoothstep(0.05, 0.04, abs(n - 0.5));
-    FragColor = mix(vec4(19.0 / 255.0, 19.0 / 255.0, 20.0 / 255.0, 1.0), vec4(vec3(30.0 / 255.0, 30.0 / 255.03, 36.0 / 255.0), 1.0), glow);
+    float lineWidth = 0.04;
+    float fadeOut = 0.01;
+
+    float glow = smoothstep(lineWidth + fadeOut, lineWidth - fadeOut, abs(n - (0.4 + abs(cos(time * 0.1)) * 0.1)));
+    FragColor = mix(vec4(19.0 / 255.0, 19.0 / 255.0, 20.0 / 255.0, 1.0), vec4(vec3(30.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0), 1.0), glow);
 }

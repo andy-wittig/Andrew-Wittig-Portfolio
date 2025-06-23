@@ -785,7 +785,7 @@ async function runEngine()
                             divPageIndicator.append(indicatorBullet);
                             indicatorBullet.innerHTML = "&#9702;";
                         }
-                        indicators[pageCount].style.color = "&#8226;";
+                        indicators[pageCount].innerHTML = "&#8226;";
                         divClipboard.innerHTML = projectPages[pageCount];
 
                         break;
@@ -803,7 +803,7 @@ async function runEngine()
                             divPageIndicator.append(indicatorBullet);
                             indicatorBullet.innerHTML = "&#9702;";
                         }
-                        indicators[pageCount].style.color = "&#8226;";
+                        indicators[pageCount].innerHTML = "&#8226;";
                         divClipboard.innerHTML = skillPages[pageCount];
                         break;
                 }

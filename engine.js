@@ -1075,8 +1075,9 @@ async function runEngine()
         let maxScrollY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         let scrolledPercent = currentScrollPos / maxScrollY;
         const divOverlayFade = document.getElementById("overlay-fade");
-        const fadeMultiplier = 1.4;
+        const fadeMultiplier = 1.5;
         divOverlayFade.style.backgroundColor = `rgb(19, 19, 20, ${scrolledPercent * fadeMultiplier})`;
+        divOverlayFade.backgroundImage = "imageGra"
         iconAnglesDown.style.opacity = 1 - scrolledPercent * fadeMultiplier;
         //console.log(scrolledPercent); debug
     });

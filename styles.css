@@ -121,6 +121,7 @@ h1
     font-weight: 100;
     font-family: "Cascadia Code", monospace;
     text-align: center;
+    letter-spacing: 0.8vh;
     animation: anim-bolden 6s infinite;
     animation-direction: alternate;
     animation-delay: 5s;
@@ -128,8 +129,8 @@ h1
 
 @keyframes anim-bolden
 {
-    from { letter-spacing: normal; }
-    to { letter-spacing: 6px; }
+    from { letter-spacing: 0.8vh; }
+    to { letter-spacing: 1vh; }
 }
 
 h2

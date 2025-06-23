@@ -73,6 +73,7 @@ const mClipBoard = new Model("Models/clipboard.obj", "Textures/clipboard_diffuse
 const mDesk = new Model("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", "Textures/default_ao.png");
 const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", "Textures/default_ao.png");
 const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, "Textures/default_ao.png");
+const mPhone = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
 const mCube = new Model("Models/cube.obj");
 const mQuad = new Model("Models/quad.obj");
 
@@ -337,6 +338,7 @@ await mClipBoard.Initialize();
 await mDesk.Initialize();
 await mMug.Initialize();
 await mPen.Initialize();
+await mPhone.Initialize();
 
 mMonitor.setID(assignUniqueID());
 mMonitor2.setID(assignUniqueID());
@@ -392,6 +394,8 @@ async function runEngine()
     mMug.rotate(degToRad(-30), [0, 1, 0]);
     mPen.setPosition([1.5, 0, 1]);
     mPen.rotate(degToRad(10), [0, 1, 0]);
+    mPhone.setPosition([-1.8, 0, 0.8]);
+    mPhone.rotate(degToRad(45), [0, 1, 0]);
     
     const clipboardStartingPos = [0, 1.02, 2.05];
     mClipBoard.setPosition(clipboardStartingPos);
@@ -405,8 +409,8 @@ async function runEngine()
     const cameraRadius = 10;
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
     //Clipboard Camera
-    const camera2Fov = 65;
-    const cameraView2 = [[0, 1.6, 3.0], [0, .3, .8], [0, 1, 0]];
+    const camera2Fov = 60;
+    const cameraView2 = [[0, 1.6, 3.2], [0, .3, .8], [0, 1, 0]];
     
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
@@ -979,6 +983,10 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPen.getModelMatrix());
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPen.getModelMatrix()))));
         mPen.render(mShader);
+
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPhone.getModelMatrix());
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPhone.getModelMatrix()))));
+        mPhone.render(mShader);
 
         //Clipboard Text Rendering
         renderClipboardContent();

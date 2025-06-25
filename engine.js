@@ -368,8 +368,8 @@ async function runEngine()
     mMonitor3.setDescription(`
     <ul>
     <li>C++, Python</li>
-    <li>WebGL, OpenGL</li>
     <li>Javascript, HTML, CSS</li>
+    <li>WebGL, OpenGL</li>
     </ul> 
     `);
 
@@ -404,7 +404,7 @@ async function runEngine()
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
     //Clipboard Camera
     const camera2Fov = 60;
-    const cameraView2 = [[0, 1.6, 3.2], [0, .3, .8], [0, 1, 0]];
+    const cameraView2 = [[0, 1.6, 3.1], [0, .35, .8], [0, 1, 0]];
     
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
@@ -707,60 +707,81 @@ async function runEngine()
     ];
 
     aboutPages[0] = `
-    <p>
+    <div class="clipboard-text">
         <img src="Images/Headshot.png" class="img" loading="lazy" alt="Professional headshot photo."></img>
         <b>Hey there, I'm Andy.</b><br></br>
-        I've been programming, drawing, and designing projects since I got my first computer when I was 12.
-        I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
-        <i>Needless to say</i>... 12 year old me wasn't ready to achieve such a feat yet.
-        Since that time, the same passion and excitement for learning and creating has followed me untill this day.
-    </p>
+        I've been programming, drawing, and designing projects since I got my first computer at age 12.
+        I still remember sitting down to install python for the first time, diving into Youtube tutorials, and ambitiously deciding that tackling natural language processing would be my first project.
+        <i>Needless to say</i>... 12-year-old me wasn't quite ready for that challenge.
+        But that moment sparked a passion and excitement for learning and creating that has followed me untill this day.
+    </div>
     `;
 
     aboutPages[1] = `
-    <p>
+    <div class="clipboard-text">
         <img src="Images/UNR Logo.png" class="img" loading="lazy" alt="University of Nevada Logo."></img>
-        I've been attending the University of Nevada Reno completing my bachelors degree in Computer Science Engineering.
-        I love researching technologies, testing my creative abilities when developing new projects, and working hard to achieve my aspirations of starting my career in Engineering.
-        I'm passionate about my work and I'm a strong team player who brings personality and a great attitude every day.
-    </p>
+        I'm currently attending my last yeat at the University of Nevada Reno, pursuing my bachelors degree in Computer Science and Engineering.
+        I love researching graphics technologies, pushing my creative abilities through project development, and working hard to achieve my aspirations of launching my career in Engineering.
+        I'm passionate and dedicated towards my work and I'm a strong team player who brings enthusiasm and a positive attitude for problem-solving to every project I work on.
+    </div>
     `;
 
     skillPages[0] = `
-    <p>
-        <b><u>Skills Report</u></b><br></br>
-        <b>Languages</b>
+    <div class="clipboard-text">
+        <div style="text-align: center;"><strong><u>Skills Report</u></strong></div>
+        <br>
+        <strong>Languages</strong>
         <div class="border">
             <ul>
-            <li><b>C++</b>: Built an OpenGL rendering engine for a space exploration experience.</li>
-            <li><b>Python</b>: Developed a Blackjack program using Tkinter.</li>
-            <li><b>HTML, CSS, Javascript</b>: Created an immersive WebGL based PBR rendering engine for this portfolio!</li>
-            <li><b>GDscript</b>: Independently published a platforming videogame made in the Godot engine.</li>
+            <li><strong>C++</strong>: Built an OpenGL-based rendering engine for a space exploration experience.</li>
+            <li><strong>Python</strong>: Developed a GUI-based Blackjack game using Tkinter, and expiremented with a deep-learning model for digit recognition using Pytorch.</li>
+            <li><strong>HTML, CSS, JavaScript</strong>: Created an immersive, WebGL physically based rendering (PBR) engine used to power this portfolio!</li>
+            <li><strong>GDscript</strong>: Independently designed and published a 2D platformer video game made in the Godot engine.</li>
             </ul>
         </div>
-        <b>General</b>
+        <br>
+        <strong>General</strong>
         <div class="border">
-            Computer Graphics, Game Design, Digital Product Launches, Multiplayer Networking, Micro-controllers
+            Computer Graphics, Game Design, Object-Oriented Programming (OOP), Digital Product Launches, Multiplayer Networking, Microcontrollers
         </div>
-        <b>Software</b>
+        <br>
+        <strong>Software</strong>
         <div class="border">
-            Visual Studios, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, Davinci Resolve, Adobe Fresco
+            Visual Studio, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, DaVinci Resolve, Adobe Fresco
         </div>
-    </p>
+    </div>
     `;
 
     projectPages[0] = `
-    <p>
-        <p style="text-align: center;">
-            <b>Solar System Rendering Engine</b>
+    <div class="clipboard-text">
+        <div class="clipboard-text" style="text-align: center;">
+            <b><u>Solar System Rendering Engine</u></b>
             <video width="80%" height="auto" controls>
                 <source src="Videos/Space Simulator.mp4" type="video/mp4">
             Your browser doesn't support the video tag.
             </video>
-        </p>
-        This flight through space was written in C++ using the OpenGL pipeline to enable rendering complex 3D models with lighting and texturing.
-        This project garnered valuable experience in the GLSL shader language, matrix mathematics, computer graphics engine development, and API integrations with Assimp and STBI.
-    </p>
+        </div>
+        This space simulation is a C++ project built using the OpenGL rendering pipeline to display complex 3D models with lighting and texturing.
+        This project garnered valuable experience with the GLSL shader language, matrix mathematics, graphics engine development, and API integration with libraries such as Assimp (model loading) and STB Image (texture processing).
+        <br>
+        The interactable model of the solar system includes both planetary orbit mode and a first-person flight mode to enhance exploration. To enhance the graphical fidelity, the project incorporates bloom and HDR buffers, normal mapping, and emmisive lighting maps.
+        To boost the runtime performance, object instancing was implemented to efficiently render asteroid belts.
+        Check out the repository <a href="https://github.com/andy-wittig/OpenGL-Space-Exploration-Engine" target="_blank">here</a>.
+    </div>
+    `;
+
+    projectPages[1] = `
+    <div class="clipboard-text">
+        <div class="clipboard-text" style="text-align: center;">
+            <b><u>Indepedent Video Game Production</u></b>
+            <iframe width="100%" height="auto" src="https://www.youtube.com/embed/MpCnNgofuI0?si=uYQaz0UA1oEiKvpD?mute=1" allowfullscreen></iframe>
+        </div>
+    This <a href="https://strangefew.itch.io/deadhelm-demo" target="_blank">project</a> was developed over the course of a year, with all art, game design, programming, audio, and system design created independently.
+    The original soundtrack was generously contributed by a close friend.
+    Built using GDScript in the Godot engine, this game features a custom inventory management system, saving/loading functioanlity via file management, a modular animation system, complex state-machines for character interaction and physics control,
+    and object-oriented programming for reusable, maintaible game logic--especially for enemy behavior and interaction.
+    This game also includes a fully functional user interface designed to assist user experience, supporting menu navigation, control remapping, graphical and audio adjustments, and live tracking of in-game statistics.
+    </div>
     `;
 
     function updatePage()
@@ -835,7 +856,7 @@ async function runEngine()
 
     function renderClipboardContent()
     {
-        let topLeft = getScreenPosFromObject([-.32, .3, -.15, 1], mClipBoard, false);
+        let topLeft = getScreenPosFromObject([-.32, .32, -.15, 1], mClipBoard, false);
         let bottomRight = getScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
 
         //Resize monitor text box
@@ -921,7 +942,6 @@ async function runEngine()
         //Render Noise Background
         gl.disable(gl.DEPTH_TEST);
         mNoiseShader.enableShader();
-        gl.uniform2f(mNoiseShader.getUniformLocation("resolution"), canvas.width, canvas.height);
         gl.uniform1f(mNoiseShader.getUniformLocation("time"), time);
         mQuad.render();
         gl.enable(gl.DEPTH_TEST);

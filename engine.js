@@ -362,13 +362,7 @@ async function runEngine()
     mMonitor.setDescription("I spend my time creating emmersive experiences within websites, programs, and games.");
 
     mMonitor2.setName("<b>Projects</b>");
-    mMonitor2.setDescription(`
-    <ul>
-    <li>Project 1</li>
-    <li>Project 2</li>
-    <li>Project 3</li>
-    </ul> 
-    `);
+    mMonitor2.setDescription("Check below to read all about the projects I've been developing!");
     
     mMonitor3.setName("<b>Skills</b>");
     mMonitor3.setDescription(`
@@ -702,8 +696,8 @@ async function runEngine()
     }
 
     //--------------------Clipboard Content--------------------
-    const aboutPages = new Array(3);
-    const skillPages = new Array(3);
+    const aboutPages = new Array(2);
+    const skillPages = new Array(1);
     const projectPages = new Array(3);
 
     const pageIDList = [
@@ -714,7 +708,7 @@ async function runEngine()
 
     aboutPages[0] = `
     <p>
-        <img src="Images/Headshot.jpg" class="img" loading="lazy" alt="Professional headshot photo."></img>
+        <img src="Images/Headshot.png" class="img" loading="lazy" alt="Professional headshot photo."></img>
         <b>Hey there, I'm Andy.</b><br></br>
         I've been programming, drawing, and designing projects since I got my first computer when I was 12.
         I remember sitting and installing python for that first time, loading up tutorials, and deciding I would tackle natural language as my first project.
@@ -723,26 +717,49 @@ async function runEngine()
     </p>
     `;
 
+    aboutPages[1] = `
+    <p>
+        <img src="Images/UNR Logo.png" class="img" loading="lazy" alt="University of Nevada Logo."></img>
+        I've been attending the University of Nevada Reno completing my bachelors degree in Computer Science Engineering.
+        I love researching technologies, testing my creative abilities when developing new projects, and working hard to achieve my aspirations of starting my career in Engineering.
+        I'm passionate about my work and I'm a strong team player who brings personality and a great attitude every day.
+    </p>
+    `;
+
     skillPages[0] = `
     <p>
         <b><u>Skills Report</u></b><br></br>
-        Languages
+        <b>Languages</b>
         <div class="border">
             <ul>
             <li><b>C++</b>: Built an OpenGL rendering engine for a space exploration experience.</li>
             <li><b>Python</b>: Developed a Blackjack program using Tkinter.</li>
-            <li><b>HTML, CSS, Javascript</b>: Created an emmersive WebGL based PBR rendering engine for this portfolio!</li>
+            <li><b>HTML, CSS, Javascript</b>: Created an immersive WebGL based PBR rendering engine for this portfolio!</li>
             <li><b>GDscript</b>: Independently published a platforming videogame made in the Godot engine.</li>
             </ul>
         </div>
-        General
+        <b>General</b>
         <div class="border">
-            Product Marketing and Launches, Computer Graphics, Game Design, Multiplayer Networking, Micro-controllers
+            Computer Graphics, Game Design, Digital Product Launches, Multiplayer Networking, Micro-controllers
         </div>
-        Software
+        <b>Software</b>
         <div class="border">
             Visual Studios, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, Davinci Resolve, Adobe Fresco
         </div>
+    </p>
+    `;
+
+    projectPages[0] = `
+    <p>
+        <p style="text-align: center;">
+            <b>Solar System Rendering Engine</b>
+            <video width="80%" height="auto" controls>
+                <source src="Videos/Space Simulator.mp4" type="video/mp4">
+            Your browser doesn't support the video tag.
+            </video>
+        </p>
+        This flight through space was written in C++ using the OpenGL pipeline to enable rendering complex 3D models with lighting and texturing.
+        This project garnered valuable experience in the GLSL shader language, matrix mathematics, computer graphics engine development, and API integrations with Assimp and STBI.
     </p>
     `;
 
@@ -1085,7 +1102,6 @@ async function runEngine()
         const divOverlayFade = document.getElementById("overlay-fade");
         const fadeMultiplier = 1.5;
         divOverlayFade.style.backgroundColor = `rgb(19, 19, 20, ${scrolledPercent * fadeMultiplier})`;
-        divOverlayFade.backgroundImage = "imageGra"
         iconAnglesDown.style.opacity = 1 - scrolledPercent * fadeMultiplier;
         //console.log(scrolledPercent); debug
     });

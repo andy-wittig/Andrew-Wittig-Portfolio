@@ -74,6 +74,7 @@ const mDesk = new Model("Models/desk.obj", "Textures/wood_diffuse.png", "Texture
 const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", "Textures/default_ao.png");
 const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, "Textures/default_ao.png");
 const mPhone = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
+const mPlant = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
 const mCube = new Model("Models/cube.obj");
 const mQuad = new Model("Models/quad.obj");
 
@@ -339,6 +340,7 @@ await mDesk.Initialize();
 await mMug.Initialize();
 await mPen.Initialize();
 await mPhone.Initialize();
+await mPlant.Initialize();
 
 mMonitor.setID(assignUniqueID());
 mMonitor2.setID(assignUniqueID());
@@ -359,7 +361,7 @@ let deltaTime = 0;
 async function runEngine()
 {
     mMonitor.setName("<b>About Me</b>");
-    mMonitor.setDescription("I spend my time creating emmersive experiences within websites, programs, and games.");
+    mMonitor.setDescription("I spend my time creating immersive experiences within websites, programs, and games.");
 
     mMonitor2.setName("<b>Projects</b>");
     mMonitor2.setDescription("Check below to read all about the projects I've been developing!");
@@ -390,6 +392,7 @@ async function runEngine()
     mPen.rotate(degToRad(10), [0, 1, 0]);
     mPhone.setPosition([-1.8, 0, 0.8]);
     mPhone.rotate(degToRad(45), [0, 1, 0]);
+    mPlant.setPosition([2, 0, -.8]);
     
     const clipboardStartingPos = [0, 1.02, 2.05];
     mClipBoard.setPosition(clipboardStartingPos);
@@ -720,7 +723,7 @@ async function runEngine()
     aboutPages[1] = `
     <div class="clipboard-text">
         <img src="Images/UNR Logo.png" class="img" loading="lazy" alt="University of Nevada Logo."></img>
-        I'm currently attending my last yeat at the University of Nevada Reno, pursuing my bachelors degree in Computer Science and Engineering.
+        I'm currently attending my last year at the University of Nevada Reno, pursuing my bachelors degree in Computer Science and Engineering.
         I love researching graphics technologies, pushing my creative abilities through project development, and working hard to achieve my aspirations of launching my career in Engineering.
         I'm passionate and dedicated towards my work and I'm a strong team player who brings enthusiasm and a positive attitude for problem-solving to every project I work on.
     </div>
@@ -756,15 +759,12 @@ async function runEngine()
     <div class="clipboard-text">
         <div class="clipboard-text" style="text-align: center;">
             <b><u>Solar System Rendering Engine</u></b>
-            <video width="80%" height="auto" controls>
-                <source src="Videos/Space Simulator.mp4" type="video/mp4">
-            Your browser doesn't support the video tag.
-            </video>
+            <iframe width="100%" height="auto" src="https://www.youtube.com/embed/RzYhe5LusDc?si=VEjUhuzEKRwCNkU6" allowfullscreen></iframe>
         </div>
         This space simulation is a C++ project built using the OpenGL rendering pipeline to display complex 3D models with lighting and texturing.
         This project garnered valuable experience with the GLSL shader language, matrix mathematics, graphics engine development, and API integration with libraries such as Assimp (model loading) and STB Image (texture processing).
         <br>
-        The interactable model of the solar system includes both planetary orbit mode and a first-person flight mode to enhance exploration. To enhance the graphical fidelity, the project incorporates bloom and HDR buffers, normal mapping, and emmisive lighting maps.
+        The interactable model of the solar system includes both planetary orbit mode and a first-person flight mode to enhance exploration. To enhance the graphical fidelity, the project incorporates bloom and HDR buffers, normal mapping, and emissive lighting maps.
         To boost the runtime performance, object instancing was implemented to efficiently render asteroid belts.
         Check out the repository <a href="https://github.com/andy-wittig/OpenGL-Space-Exploration-Engine" target="_blank">here</a>.
     </div>
@@ -778,12 +778,29 @@ async function runEngine()
         </div>
     This <a href="https://strangefew.itch.io/deadhelm-demo" target="_blank">project</a> was developed over the course of a year, with all art, game design, programming, audio, and system design created independently.
     The original soundtrack was generously contributed by a close friend.
-    Built using GDScript in the Godot engine, this game features a custom inventory management system, saving/loading functioanlity via file management, a modular animation system, complex state-machines for character interaction and physics control,
-    and object-oriented programming for reusable, maintaible game logic--especially for enemy behavior and interaction.
+    Built using GDScript in the Godot engine, this game features a custom inventory management system, saving/loading functionality via file management, a modular animation system, complex state-machines for character interaction and physics control,
+    and object-oriented programming for reusable, maintainable game logic--especially for enemy behavior and interaction.
     This game also includes a fully functional user interface designed to assist user experience, supporting menu navigation, control remapping, graphical and audio adjustments, and live tracking of in-game statistics.
     </div>
     `;
 
+    projectPages[2] = `
+    <div class="clipboard-text">
+        <div class="clipboard-text" style="text-align: center;">
+            <b><u>WebGL Physically Based Rendering</b></u>
+        </div>
+        This portfolio website is run using WebGL 2.0!
+        While higher-level APIs are avaiable like Three.js to easily construct 3D scenes, I instead chose to challenge myself by powering this website with custom a graphics engine using only WebGL.
+        The first problem to overcome was loading 3D model file data. To solve this, I wrote a custom .obj parser that formats object data in a way compatible with the WebGL pipeline.
+        After a model is loaded its assigned to physically based rendering (PBR) texture maps to simulate realistic lighting and surface details.
+        I created all the models in Blender and baked their corresponding textures for use in the engine.
+        To simulate ambient lighting on object surfaces, HDR images are used to generate irradiance maps and Look up Tables (LUTs) that dynamically adjust lighting and reflections based on the surrounding environment.
+        By converting world coordinates to screen space, HTML elements are overlaid and tracked onto 3D objects to populate the sites content.
+        The background image on the home page is also generated using WebGL. I implemented Perlin noise generation with shaders and rendered it to a background quad. 
+        This produced a dynamic and animated page background that enhances the sites visual interest. Repository linked <a href="https://github.com/andy-wittig/Andrew-Wittig-Portfolio" target="_blank">here!</a>
+    </div>
+    `;
+    
     function updatePage()
     {
         divPageIndicator.replaceChildren();
@@ -1024,6 +1041,10 @@ async function runEngine()
         gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPhone.getModelMatrix());
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPhone.getModelMatrix()))));
         mPhone.render(mShader);
+
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPlant.getModelMatrix());
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPlant.getModelMatrix()))));
+        mPlant.render(mShader);
 
         //Clipboard Text Rendering
         renderClipboardContent();

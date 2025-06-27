@@ -34,10 +34,17 @@ void main()
     vec2 pos = st * 40.0;
     float n = noise(pos);
 
-    float lineWidth = 0.08;
-    float fadeOut = 0.0;
-    float speedMultiplier = 0.12;
+    float lineWidth = 0.2;
+    float fadeOut = 0.0; //sharpness of connecting edges
+    float speedMultiplier = 0.05;
 
-    float glow = smoothstep(lineWidth + fadeOut, lineWidth - fadeOut, abs(n - (0.4 + abs(cos(time * speedMultiplier)) * 0.1)));
-    FragColor = mix(vec4(19.0 / 255.0, 19.0 / 255.0, 20.0 / 255.0, 1.0), vec4(vec3(12.0 / 255.0, 12.0 / 255.0, 12.0 / 255.0), 1.0), glow);
+    float bands = 5.0;
+    float repeatNoise = fract(n * bands); //fract returns fractional portion of floating point number
+    float lineCenter = abs(cos(time * speedMultiplier));
+
+    float lines = smoothstep(lineWidth + fadeOut, 
+                            lineWidth - fadeOut, 
+                            abs(repeatNoise - lineCenter));
+
+    FragColor = mix(vec4(19.0 / 255.0, 19.0 / 255.0, 20.0 / 255.0, 1.0), vec4(vec3(12.0 / 255.0, 12.0 / 255.0, 12.0 / 255.0), 1.0), lines);
 }

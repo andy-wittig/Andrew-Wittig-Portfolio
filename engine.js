@@ -386,8 +386,8 @@ async function runEngine()
     mMonitor3.translate([0, 0, objectPositionRadius]);
 
     ///Setup Clipboard Scene 2 Trasformations
-    mMug.setPosition([2, 0.2, 0.5]);
-    mMug.rotate(degToRad(-30), [0, 1, 0]);
+    mMug.setPosition([2.2, 0, 0.5]);
+    mMug.rotate(degToRad(-45), [0, 1, 0]);
     mPen.setPosition([1.5, 0, 1]);
     mPen.rotate(degToRad(10), [0, 1, 0]);
     mPhone.setPosition([-1.8, 0, 0.8]);
@@ -745,7 +745,7 @@ async function runEngine()
         <br>
         <strong>General</strong>
         <div class="border">
-            Computer Graphics, Game Design, Object-Oriented Programming (OOP), Digital Product Launches, Multiplayer Networking, Microcontrollers
+            Computer Graphics, Game Design, Object-Oriented Programming (OOP), Digital Product Launches, Multiplayer Networking, Microcontrollers, 3D Modeling, Freelance art
         </div>
         <br>
         <strong>Software</strong>

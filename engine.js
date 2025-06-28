@@ -70,9 +70,9 @@ const mMonitor = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png"
 const mMonitor2 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
 const mMonitor3 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
 const mClipBoard = new Model("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", "Textures/clipboard_ao.png");
-const mDesk = new Model("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", "Textures/default_ao.png");
-const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", "Textures/default_ao.png");
-const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, "Textures/default_ao.png");
+const mDesk = new Model("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
+const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
+const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 const mPhone = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
 const mPlant = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
 const mCube = new Model("Models/cube.obj");
@@ -121,17 +121,24 @@ gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER,
 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
 
 const hdrTexture = gl.createTexture();
-var hdrImage = new HDRImage();
-hdrImage.src = "HDR/lounge.hdr";
 
-hdrImage.onload = () => {
-    gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB16F, hdrImage.width, hdrImage.height, 0, gl.RGB, gl.FLOAT, hdrImage.dataFloat);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-};
+function loadHDRImage(url)
+{
+    return new Promise((resolve, reject) => {
+        const hdrImage = new HDRImage();
+        hdrImage.src = url;
+        hdrImage.onload = () => resolve(hdrImage);
+        hdrImage.onerror = reject;
+    });
+}
+
+const hdrImage = await loadHDRImage("HDR/lounge.hdr");
+gl.bindTexture(gl.TEXTURE_2D, hdrTexture);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB16F, hdrImage.width, hdrImage.height, 0, gl.RGB, gl.FLOAT, hdrImage.dataFloat);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 //Setup Cubemap
 const envCubemap = gl.createTexture();
@@ -157,13 +164,14 @@ const captureViews = [
     mat4.lookAt(mat4.create(), [0, 0, 0], [0, 0, -1], [0, -1, 0])
 ];
 
-await mCube.Initialize();
-await mQuad.Initialize();
-
-await mCubemapShader.Initialize();
-await mConvolutionShader.Initialize();
-await mPrefilterShader.Initialize();
-await mBrdfShader.Initialize();
+await Promise.all([
+    mCube.Initialize(),
+    mQuad.Initialize(),
+    mCubemapShader.Initialize(),
+    mConvolutionShader.Initialize(),
+    mPrefilterShader.Initialize(),
+    mBrdfShader.Initialize()
+]);
 
 mCubemapShader.enableShader();
 gl.uniform1i(mCubemapShader.getUniformLocation("equirectangularMap"), 0);
@@ -759,7 +767,7 @@ async function runEngine()
     <div class="clipboard-text">
         <div class="clipboard-text" style="text-align: center;">
             <b><u>Solar System Rendering Engine</u></b>
-            <iframe width="100%" height="auto" src="https://www.youtube.com/embed/RzYhe5LusDc?si=VEjUhuzEKRwCNkU6" allowfullscreen></iframe>
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/RzYhe5LusDc?si=VEjUhuzEKRwCNkU6" allowfullscreen></iframe>
         </div>
         This space simulation is a C++ project built using the OpenGL rendering pipeline to display complex 3D models with lighting and texturing.
         This project garnered valuable experience with the GLSL shader language, matrix mathematics, graphics engine development, and API integration with libraries such as Assimp (model loading) and STB Image (texture processing).
@@ -774,7 +782,7 @@ async function runEngine()
     <div class="clipboard-text">
         <div class="clipboard-text" style="text-align: center;">
             <b><u>Indepedent Video Game Production</u></b>
-            <iframe width="100%" height="auto" src="https://www.youtube.com/embed/MpCnNgofuI0?si=uYQaz0UA1oEiKvpD?mute=1" allowfullscreen></iframe>
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/MpCnNgofuI0?si=uYQaz0UA1oEiKvpD?mute=1" allowfullscreen></iframe>
         </div>
     This <a href="https://strangefew.itch.io/deadhelm-demo" target="_blank">project</a> was developed over the course of a year, with all art, game design, programming, audio, and system design created independently.
     The original soundtrack was generously contributed by a close friend.

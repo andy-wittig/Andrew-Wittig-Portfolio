@@ -39,8 +39,11 @@ iconChevronRight.className = "fa fa-chevron-right";
 //Content
 const divMonitor = document.createElement("div");
 divMonitor.className = "floating-div-monitor";
+const divClipboardContainer = document.createElement("div");
 const divClipboard = document.createElement("div");
 divClipboard.className = "floating-div-clipboard";
+const divNote = document.createElement("div");
+divNote.className = "floating-div-note";
 const divMonitorName = document.createElement("div");
 const divMonitorDesc = document.createElement("div");
 
@@ -53,7 +56,9 @@ divContainer.append(clipboardRightButton);
 divMonitor.append(divMonitorName);
 divMonitor.append(divMonitorDesc);
 divContainer.append(divMonitor);
-divContainer.append(divClipboard);
+divClipboardContainer.append(divClipboard);
+divClipboardContainer.append(divNote);
+divContainer.append(divClipboardContainer);
 //--------------------End HTML--------------------
 
 //Shader Definitions
@@ -76,6 +81,7 @@ const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/M
 const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 const mPhone = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
 const mPlant = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
+const mNote = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", "Textures/Sticky Note/ao.png");
 const mCube = new Model("Models/cube.obj");
 const mQuad = new Model("Models/quad.obj");
 
@@ -350,6 +356,7 @@ await mMug.Initialize();
 await mPen.Initialize();
 await mPhone.Initialize();
 await mPlant.Initialize();
+await mNote.Initialize();
 
 mMonitor.setID(assignUniqueID());
 mMonitor2.setID(assignUniqueID());
@@ -531,6 +538,8 @@ async function runEngine()
             clipboardLeftButton.classList.add("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.add("anim-fadeout-in");
+            divClipboardContainer.classList.remove("anim-fadeout-in");
+            divClipboardContainer.classList.add("anim-fadeout-in");
 
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
@@ -546,6 +555,8 @@ async function runEngine()
             clipboardLeftButton.classList.add("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.add("anim-fadeout-in");
+            divClipboardContainer.classList.remove("anim-fadeout-in");
+            divClipboardContainer.classList.add("anim-fadeout-in");
 
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
@@ -893,6 +904,22 @@ async function runEngine()
         divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
         divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
     }
+
+    function renderNoteContent()
+    {
+        let notePos = getScreenPosFromObject([-.1, 0, 0, 1], mNote, false);
+
+        divNote.innerHTML = `
+        <strong>
+        Contact Me!
+        <br>
+        (775) 409-9505
+        </strong>
+        `;
+
+        divNote.style.left = Math.floor(notePos[0]) + "px"; 
+        divNote.style.top = Math.floor(notePos[1]) + "px";
+    }
     //--------------------End Clipboard--------------------
 
     function updateCamera(view, fov)
@@ -1057,8 +1084,16 @@ async function runEngine()
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPlant.getModelMatrix()))));
         mPlant.render(mShader);
 
-        //Clipboard Text Rendering
+        let newPos = vec3.create();
+        vec3.add(newPos, mClipBoard.getPosition(), [-.28, .485, -.26]);
+        mNote.setPosition(newPos);
+        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mNote.getModelMatrix());
+        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mNote.getModelMatrix()))));
+        mNote.render(mShader);
+
+        //HTML Text Rendering
         renderClipboardContent();
+        renderNoteContent();
 
         //Animations
         if (startClipboardAnim)
@@ -1069,6 +1104,7 @@ async function runEngine()
         {
             clipboardLeftButton.classList.remove("anim-fadeout-in");
             clipboardRightButton.classList.remove("anim-fadeout-in");
+            divClipboardContainer.classList.remove("anim-fadeout-in");
         }
         //--------------------End Scene 2--------------------
 

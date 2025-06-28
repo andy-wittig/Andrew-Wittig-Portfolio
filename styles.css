@@ -120,6 +120,17 @@ html, head, body
     /*border: 1px solid black;*/
 }
 
+.floating-div-note
+{
+    position: absolute;
+    color: black;
+    text-align: center;
+    font-size: 1.8vh;
+    font-weight: 300;
+    font-family: "Cascadia Code", monospace;
+    /*border: 1px solid black;*/
+}
+
 .clipboard-text
 {
     margin: 0;
@@ -309,7 +320,6 @@ h2
 
 @keyframes fadeout-in
 {
-    0% { opacity: 0.8; }
     20% { opacity: 0; }
     50% { opacity: 0; }
     100% { opacity: 1; }

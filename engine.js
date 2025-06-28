@@ -20,6 +20,7 @@ gl.getExtension("EXT_color_buffer_float");
 export default gl;
 
 //--------------------HTML Integration--------------------
+const divLoader = document.getElementById("loader");
 //Containers
 const divContainer = document.getElementById("container");
 const divPageIndicator = document.getElementById("page-indicator");
@@ -354,6 +355,43 @@ mMonitor.setID(assignUniqueID());
 mMonitor2.setID(assignUniqueID());
 mMonitor3.setID(assignUniqueID());
 
+mMonitor.setName("<b>About Me</b>");
+mMonitor.setDescription("I spend my time creating immersive experiences within websites, programs, and games.");
+
+mMonitor2.setName("<b>Projects</b>");
+mMonitor2.setDescription("Check below to read all about the projects I've been developing!");
+
+mMonitor3.setName("<b>Skills</b>");
+mMonitor3.setDescription(`
+<ul>
+<li>C++, Python</li>
+<li>Javascript, HTML, CSS</li>
+<li>WebGL, OpenGL</li>
+</ul> 
+`);
+
+//Setup Monitor Scene 1 Transformations
+mMonitor.rotate((0 * Math.PI) / 180, [0, 1, 0]);
+mMonitor2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
+mMonitor3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
+
+const objectPositionRadius = 5;
+mMonitor.translate([0, 0, objectPositionRadius]);
+mMonitor2.translate([0, 0, objectPositionRadius]);
+mMonitor3.translate([0, 0, objectPositionRadius]);
+
+///Setup Clipboard Scene 2 Trasformations
+mMug.setPosition([2.2, 0, 0.5]);
+mMug.rotate(degToRad(-45), [0, 1, 0]);
+mPen.setPosition([1.5, 0, 1]);
+mPen.rotate(degToRad(10), [0, 1, 0]);
+mPhone.setPosition([-1.8, 0, 0.8]);
+mPhone.rotate(degToRad(45), [0, 1, 0]);
+mPlant.setPosition([2, 0, -.8]);
+
+const clipboardStartingPos = [0, 1.02, 2.05];
+mClipBoard.setPosition(clipboardStartingPos);
+
 mShader.enableShader();
 gl.uniform1i(mShader.getUniformLocation("albedoMap"), 0);
 gl.uniform1i(mShader.getUniformLocation("normalMap"), 1);
@@ -368,42 +406,7 @@ gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
 let deltaTime = 0;
 async function runEngine()
 {
-    mMonitor.setName("<b>About Me</b>");
-    mMonitor.setDescription("I spend my time creating immersive experiences within websites, programs, and games.");
-
-    mMonitor2.setName("<b>Projects</b>");
-    mMonitor2.setDescription("Check below to read all about the projects I've been developing!");
-    
-    mMonitor3.setName("<b>Skills</b>");
-    mMonitor3.setDescription(`
-    <ul>
-    <li>C++, Python</li>
-    <li>Javascript, HTML, CSS</li>
-    <li>WebGL, OpenGL</li>
-    </ul> 
-    `);
-
-    //Setup Monitor Scene 1 Transformations
-    mMonitor.rotate((0 * Math.PI) / 180, [0, 1, 0]);
-    mMonitor2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
-    mMonitor3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
-
-    const objectPositionRadius = 5;
-    mMonitor.translate([0, 0, objectPositionRadius]);
-    mMonitor2.translate([0, 0, objectPositionRadius]);
-    mMonitor3.translate([0, 0, objectPositionRadius]);
-
-    ///Setup Clipboard Scene 2 Trasformations
-    mMug.setPosition([2.2, 0, 0.5]);
-    mMug.rotate(degToRad(-45), [0, 1, 0]);
-    mPen.setPosition([1.5, 0, 1]);
-    mPen.rotate(degToRad(10), [0, 1, 0]);
-    mPhone.setPosition([-1.8, 0, 0.8]);
-    mPhone.rotate(degToRad(45), [0, 1, 0]);
-    mPlant.setPosition([2, 0, -.8]);
-    
-    const clipboardStartingPos = [0, 1.02, 2.05];
-    mClipBoard.setPosition(clipboardStartingPos);
+    divLoader.style.visibility = "hidden";
 
     //Monitor Camera
     let firstClick = false;

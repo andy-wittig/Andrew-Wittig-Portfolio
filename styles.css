@@ -32,7 +32,6 @@ html, head, body
     text-align: center;
     width: 100vw;
     bottom: -100%;
-    
 }
 
 #overlay-fade
@@ -141,6 +140,39 @@ html, head, body
     font-family: "Cascadia Code", monospace;
 }
 
+.clipboard-title
+{
+    margin: 1vh;
+    color: black;
+    text-align: center;
+    font-size: 2.8vh;
+    font-weight: 300;
+    font-family: "Cascadia Code", monospace;
+}
+
+#left-side-content
+{
+    position: absolute !important;
+    left: -65vh;
+    width: 40vh;
+    height: 40vh;
+    padding: 4vh;
+    text-align: center;
+    color: black;
+    font-size: 1.8vh;
+    font-weight: 300;
+    font-family: "Cascadia Code", monospace;
+    background-color: hsla(0, 0%, 100%, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 5%;
+}
+
+#left-side-content img, iframe
+{
+    width: 100%;
+    height: auto;
+}
+
 .img
 {
     width: 25vh;
@@ -155,6 +187,11 @@ html, head, body
     color: black;
     padding: 0.2vh;
     border: 1px solid black;
+}
+
+iframe
+{
+    border: none;
 }
 
 h1
@@ -219,7 +256,7 @@ h2
 
 .fa-chevron-left, .fa-chevron-right
 {
-    font-size: 4vw !important;
+    font-size: 8vh !important;
     text-align: center;
     text-shadow: 0px 2px 2px black;
     color: white;
@@ -233,20 +270,8 @@ h2
     border: none;
     text-decoration: none;
     background-color: transparent;
-    padding: 40px;
+    padding: 0;
     animation: anim-grow 1.6s infinite alternate;
-}
-
-.left-btn
-{
-    left: 28%;
-    top: 150%;  
-}
-
-.right-btn
-{
-    right: 28%;
-    top: 150%;
 }
 
 .left-btn:hover, .right-btn:hover

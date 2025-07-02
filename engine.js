@@ -23,7 +23,6 @@ export default gl;
 const divLoader = document.getElementById("loader");
 //Containers
 const divContainer = document.getElementById("container");
-const divPageIndicator = document.getElementById("page-indicator");
 //Buttons
 const clipboardLeftButton = document.createElement("button");
 clipboardLeftButton.className = "left-btn";
@@ -36,6 +35,7 @@ const iconChevronLeft = document.createElement("i");
 iconChevronLeft.className = "fa fa-chevron-left";
 const iconChevronRight = document.createElement("i");
 iconChevronRight.className = "fa fa-chevron-right";
+const divPageIndicator = document.getElementById("page-indicator");
 //Content
 const divMonitor = document.createElement("div");
 divMonitor.className = "floating-div-monitor";
@@ -46,19 +46,6 @@ const divNote = document.createElement("div");
 divNote.className = "floating-div-note";
 const divMonitorName = document.createElement("div");
 const divMonitorDesc = document.createElement("div");
-
-divContainer.append(iconAnglesDown);
-clipboardLeftButton.append(iconChevronLeft);
-clipboardRightButton.append(iconChevronRight);
-divContainer.append(clipboardLeftButton);
-divContainer.append(clipboardRightButton);
-
-divMonitor.append(divMonitorName);
-divMonitor.append(divMonitorDesc);
-divContainer.append(divMonitor);
-divClipboardContainer.append(divClipboard);
-divClipboardContainer.append(divNote);
-divContainer.append(divClipboardContainer);
 //--------------------End HTML--------------------
 
 //Shader Definitions
@@ -413,7 +400,20 @@ gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
 let deltaTime = 0;
 async function runEngine()
 {
-    divLoader.style.visibility = "hidden";
+    divContainer.append(iconAnglesDown);
+    clipboardLeftButton.append(iconChevronLeft);
+    clipboardRightButton.append(iconChevronRight);
+    divContainer.append(clipboardLeftButton);
+    divContainer.append(clipboardRightButton);
+
+    divMonitor.append(divMonitorName);
+    divMonitor.append(divMonitorDesc);
+    divContainer.append(divMonitor);
+    divClipboardContainer.append(divClipboard);
+    divClipboardContainer.append(divNote);
+    divContainer.append(divClipboardContainer);
+
+    divLoader.remove(); //remove page loader
 
     //Monitor Camera
     let firstClick = false;
@@ -779,10 +779,11 @@ async function runEngine()
 
     projectPages[0] = `
     <div class="clipboard-text">
-        <div class="clipboard-text" style="text-align: center;">
-            <b><u>Solar System Rendering Engine</u></b>
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/RzYhe5LusDc?si=VEjUhuzEKRwCNkU6" allowfullscreen></iframe>
+        <div id="left-side-content">
+            <iframe src="https://www.youtube.com/embed/RzYhe5LusDc?si=VEjUhuzEKRwCNkU6" allowfullscreen></iframe>
+            <img src="Images/Screenshot 1.png" loading="lazy" alt="Screenshot of the space rendering engine."></img>
         </div>
+        <div class="clipboard-title">Solar System Rendering Engine</div>
         This space simulation is a C++ project built using the OpenGL rendering pipeline to display complex 3D models with lighting and texturing.
         This project garnered valuable experience with the GLSL shader language, matrix mathematics, graphics engine development, and API integration with libraries such as Assimp (model loading) and STB Image (texture processing).
         <br>
@@ -794,10 +795,11 @@ async function runEngine()
 
     projectPages[1] = `
     <div class="clipboard-text">
-        <div class="clipboard-text" style="text-align: center;">
-            <b><u>Indepedent Video Game Production</u></b>
+        <div id="left-side-content">
             <iframe width="100%" height="100%" src="https://www.youtube.com/embed/MpCnNgofuI0?si=uYQaz0UA1oEiKvpD?mute=1" allowfullscreen></iframe>
+            <iframe frameborder="0" src="https://itch.io/embed/3137058?linkback=true" width="552" height="167"><a href="https://strangefew.itch.io/deadhelm-demo">Deadhelm by Strange Few Studios</a></iframe>
         </div>
+    <div class="clipboard-title">Indepedent Video Game Production</div>
     This <a href="https://strangefew.itch.io/deadhelm-demo" target="_blank">project</a> was developed over the course of a year, with all art, game design, programming, audio, and system design created independently.
     The original soundtrack was generously contributed by a close friend.
     Built using GDScript in the Godot engine, this game features a custom inventory management system, saving/loading functionality via file management, a modular animation system, complex state-machines for character interaction and physics control,
@@ -897,12 +899,19 @@ async function runEngine()
     {
         let topLeft = getScreenPosFromObject([-.32, .32, -.15, 1], mClipBoard, false);
         let bottomRight = getScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
+        let leftButtonPos = getScreenPosFromObject([-0.4, 0, 0, 1], mClipBoard, false);
+        let rightButtonPos = getScreenPosFromObject([0.4, 0, 0, 1], mClipBoard, false);
 
-        //Resize monitor text box
+        //Clipboard Element Positioning
         divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
         divClipboard.style.top = Math.floor(topLeft[1]) + "px";
         divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
         divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
+
+        clipboardLeftButton.style.left = (Math.floor(leftButtonPos[0] - clipboardLeftButton.offsetWidth / 2)) + "px";
+        clipboardLeftButton.style.top = (Math.floor(leftButtonPos[1] - clipboardLeftButton.offsetHeight / 2)) + "px";
+        clipboardRightButton.style.left = (Math.floor(rightButtonPos[0] - clipboardLeftButton.offsetWidth / 2)) + "px";
+        clipboardRightButton.style.top = (Math.floor(rightButtonPos[1] - clipboardLeftButton.offsetHeight / 2)) + "px";
     }
 
     function renderNoteContent()

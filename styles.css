@@ -96,6 +96,16 @@ html, head, body
     text-decoration: underline;
 }
 
+.title-links
+{
+    color: white;
+    font-size: 1.8vw;
+    font-weight: 300;
+    text-align: center;
+    font-family: "Cascadia Code", monospace;
+    pointer-events: auto !important;
+}
+
 .floating-div-monitor
 {
     position: absolute;
@@ -162,15 +172,21 @@ html, head, body
     font-size: 1.8vh;
     font-weight: 300;
     font-family: "Cascadia Code", monospace;
-    background-color: hsla(0, 0%, 100%, 0.15);
+    background-color: #ffffff26;
     backdrop-filter: blur(10px);
     border-radius: 5%;
+    /*
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255, 255, 255) rgba(255, 255, 255, 0);
+    */
 }
 
 #left-side-content img, iframe
 {
     width: 100%;
-    height: auto;
+    height: 50%;
+    object-fit: contain;
 }
 
 .img
@@ -213,16 +229,6 @@ h1
 {
     from { letter-spacing: 0.8vh; }
     to { letter-spacing: 1vh; }
-}
-
-h2
-{
-    color: white;
-    font-size: 1.8vw;
-    font-weight: 300;
-    text-align: center;
-    font-family: "Cascadia Code", monospace;
-    pointer-events: auto !important;
 }
 
 .fa-github, .fa-envelope

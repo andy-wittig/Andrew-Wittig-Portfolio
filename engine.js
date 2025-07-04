@@ -395,6 +395,15 @@ gl.uniform1i(mShader.getUniformLocation("aoMap"), 4);
 gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
 gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
 gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
+
+try
+{
+    runEngine();
+}
+catch (e)
+{
+    console.log(`Uncaught JavaScript exception: ${e}`);
+}
 //--------------------End Rendering Initialization--------------------
 
 let deltaTime = 0;
@@ -937,7 +946,7 @@ async function runEngine()
         //gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
         //gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
         */
-       
+
         //Camera Uniforms
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
@@ -1103,12 +1112,3 @@ function radToDeg(rads)
     return rads * (180.0 / Math.PI);
 }
 //--------------------End Helpers--------------------
-
-try
-{
-    runEngine();
-}
-catch (e)
-{
-    console.log(`Uncaught JavaScript exception: ${e}`);
-}

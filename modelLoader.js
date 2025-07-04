@@ -81,8 +81,11 @@ export default class modelLoader
                     break;
             }
         }
-        //Tangent Generation
+        
+        /*
+        //Tangent Generation -- disabled for performance
         tangents = this.generateTangents(fVert, fUV, fIndex);
+        */
 
         return [fVert, fUV, fNorm, fIndex, tangents];
     }

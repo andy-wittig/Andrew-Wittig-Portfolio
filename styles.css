@@ -43,22 +43,40 @@ html, head, body
     pointer-events: none;
 }
 
-#loader
+#loading-container
 {
     position: absolute;
-    z-index: 1;
+    margin: auto;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 35vw;
+    height: 35vh;
+}
+
+.loading-icon
+{
     margin: auto;
     width: 15vh;
     height: 15vh;
     border-radius: 50%;
+    padding: 10%;
     border:  15px solid rgb(12, 12, 12, 1);
     border-top: 15px solid white;
     box-sizing: border-box;
     animation: anim-load 1.5s linear infinite;
+}
+
+.first-visit
+{
+    text-align: center;
+    padding: 1vh;
+    color: white;
+    font-size: 1.8vh;
+    font-weight: 300;
+    font-family: "Cascadia Code", monospace;
+    animation: fadein 3s;
 }
 
 @keyframes anim-load

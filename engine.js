@@ -20,9 +20,9 @@ gl.getExtension("EXT_color_buffer_float");
 export default gl;
 
 //--------------------HTML Integration--------------------
-const divLoader = document.getElementById("loader");
 //Containers
 const divContainer = document.getElementById("container");
+const divLoadingContainer = document.getElementById("loading-container");
 //Buttons
 const clipboardLeftButton = document.createElement("button");
 clipboardLeftButton.className = "left-btn";
@@ -55,7 +55,7 @@ const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Sha
 const mConvolutionShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentConvolutionShaderSource.glsl");
 const mPrefilterShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentPrefilterShaderSource.glsl");
 const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentBrdfShaderSource.glsl");
-const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
+//const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 const mNoiseShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentNoiseShaderSource.glsl");
 
 //Model Definitions
@@ -71,6 +71,27 @@ const mPlant = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Text
 const mNote = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", "Textures/Sticky Note/ao.png");
 const mCube = new Model("Models/cube.obj");
 const mQuad = new Model("Models/quad.obj");
+
+//--------------------Loading Information--------------------
+const loadingIcon = document.createElement("div");
+loadingIcon.className = "loading-icon";
+divLoadingContainer.append(loadingIcon);
+
+window.onload = function() 
+{
+    if (localStorage.getItem("firstVisit") === null)
+    {
+        console.log("Hey!");
+        localStorage.setItem("firstVisit", "true");
+        const divFirstVisit = document.createElement("div");
+        divFirstVisit.className = "first-visit";
+        divFirstVisit.innerHTML = `
+        Welcome to my WebGL-based Porfolio! The graphics engine is setting some things up, this won't take long!
+        `;
+        divLoadingContainer.append(divFirstVisit);
+    }
+};
+//--------------------End Loading Information--------------------
 
 //--------------------Picking Frambuffer--------------------
 const targetTexture = gl.createTexture();
@@ -415,6 +436,8 @@ catch (e)
 let deltaTime = 0;
 async function runEngine()
 {
+    divLoadingContainer.remove();
+
     divContainer.append(iconAnglesDown);
     clipboardLeftButton.append(iconChevronLeft);
     clipboardRightButton.append(iconChevronRight);
@@ -427,8 +450,6 @@ async function runEngine()
     divClipboardContainer.append(divClipboard);
     divClipboardContainer.append(divNote);
     divContainer.append(divClipboardContainer);
-
-    divLoader.remove(); //remove page loader
 
     //Monitor Camera
     let firstClick = false;

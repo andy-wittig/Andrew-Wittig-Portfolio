@@ -881,15 +881,19 @@ async function runEngine()
         gl.enable(gl.DEPTH_TEST);
         
         mShader.enableShader();
-        //Lighting Uniforms
+        /*
+        //Lighting Uniforms -- Enabling will reduce efficiency
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 2.5, 0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [5, 5, 5]);
         gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), cameraView[0]);
         gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
+        */
+
         //Camera Uniforms
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
+
         //Binding pre-computed IBL data
         gl.activeTexture(gl.TEXTURE5);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
@@ -926,11 +930,14 @@ async function runEngine()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         mShader.enableShader();
-        //Lighting Uniforms
-        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 1.5, -.5]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
-        gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
-        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
+        /*
+        //Lighting Uniforms -- Enabling will reduce efficiency
+        //gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 1.5, -.5]);
+        //gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
+        //gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
+        //gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
+        */
+       
         //Camera Uniforms
         gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);

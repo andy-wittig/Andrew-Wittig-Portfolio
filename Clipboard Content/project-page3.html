@@ -1,0 +1,14 @@
+<div class="clipboard-text">
+    <div class="clipboard-text" style="text-align: center;">
+        <b><u>WebGL Physically Based Rendering</b></u>
+    </div>
+    This portfolio website is run using WebGL 2.0!
+    While higher-level APIs are avaiable like Three.js to easily construct 3D scenes, I instead chose to challenge myself by powering this website with custom a graphics engine using only WebGL.
+    The first problem to overcome was loading 3D model file data. To solve this, I wrote a custom .obj parser that formats object data in a way compatible with the WebGL pipeline.
+    After a model is loaded its assigned to physically based rendering (PBR) texture maps to simulate realistic lighting and surface details.
+    I created all the models in Blender and baked their corresponding textures for use in the engine.
+    To simulate ambient lighting on object surfaces, HDR images are used to generate irradiance maps and Look up Tables (LUTs) that dynamically adjust lighting and reflections based on the surrounding environment.
+    By converting world coordinates to screen space, HTML elements are overlaid and tracked onto 3D objects to populate the sites content.
+    The background image on the home page is also generated using WebGL. I implemented Perlin noise generation with shaders and rendered it to a background quad. 
+    This produced a dynamic and animated page background that enhances the sites visual interest. Repository linked <a href="https://github.com/andy-wittig/Andrew-Wittig-Portfolio" target="_blank">here!</a>
+</div>

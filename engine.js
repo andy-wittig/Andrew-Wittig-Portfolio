@@ -721,177 +721,47 @@ async function runEngine()
     }
 
     //--------------------Clipboard Content--------------------
-    const aboutPages = new Array(2);
-    const skillPages = new Array(1);
-    const projectPages = new Array(3);
+    const aboutPageID = mMonitor.getID()
+    const projectPageID = mMonitor2.getID()
+    const skillPageID = mMonitor3.getID()
 
-    const pageIDList = [
-        mMonitor.getID(), //About page
-        mMonitor2.getID(), //Projcet page
-        mMonitor3.getID() //Skill page
-    ];
-
-    aboutPages[0] = `
-    <div class="clipboard-text">
-        <img src="Images/Headshot.png" class="img" loading="lazy" alt="Professional headshot photo."></img>
-        <b>Hey there, I'm Andy.</b><br></br>
-        I've been programming, drawing, and designing projects since I got my first computer at age 12.
-        I still remember sitting down to install python for the first time, diving into Youtube tutorials, and ambitiously deciding that tackling natural language processing would be my first project.
-        <i>Needless to say</i>... 12-year-old me wasn't quite ready for that challenge.
-        But that moment sparked a passion and excitement for learning and creating that has followed me untill this day.
-    </div>
-    `;
-
-    aboutPages[1] = `
-    <div class="clipboard-text">
-        <img src="Images/UNR Logo.png" class="img" loading="lazy" alt="University of Nevada Logo."></img>
-        I'm currently attending my last year at the University of Nevada Reno, pursuing my bachelors degree in Computer Science and Engineering.
-        I love researching graphics technologies, pushing my creative abilities through project development, and working hard to achieve my aspirations of launching my career in Engineering.
-        I'm passionate and dedicated towards my work and I'm a strong team player who brings enthusiasm and a positive attitude for problem-solving to every project I work on.
-    </div>
-    `;
-
-    skillPages[0] = `
-    <div class="clipboard-text">
-        <div style="text-align: center;"><strong><u>Skills Report</u></strong></div>
-        <br>
-        <strong>Languages</strong>
-        <div class="border">
-            <ul>
-            <li><strong>C++</strong>: Built an OpenGL-based rendering engine for a space exploration experience.</li>
-            <li><strong>Python</strong>: Developed a GUI-based Blackjack game using Tkinter, and expiremented with a deep-learning model for digit recognition using Pytorch.</li>
-            <li><strong>HTML, CSS, JavaScript</strong>: Created an immersive, WebGL physically based rendering (PBR) engine used to power this portfolio!</li>
-            <li><strong>GDscript</strong>: Independently designed and published a 2D platformer video game made in the Godot engine.</li>
-            </ul>
-        </div>
-        <br>
-        <strong>General</strong>
-        <div class="border">
-            Computer Graphics, Game Design, Object-Oriented Programming (OOP), Digital Product Launches, Multiplayer Networking, Microcontrollers, 3D Modeling, Freelance art
-        </div>
-        <br>
-        <strong>Software</strong>
-        <div class="border">
-            Visual Studio, VS Code, Godot, Unity, Microsoft 365 Suite, Audacity, DaVinci Resolve, Adobe Fresco
-        </div>
-    </div>
-    `;
-
-    projectPages[0] = `
-    <div class="clipboard-text">
-        <div id="left-side-content">
-            <iframe src="https://www.youtube.com/embed/RzYhe5LusDc?si=VEjUhuzEKRwCNkU6" allowfullscreen></iframe>
-            <img src="Images/Screenshot 1.png" loading="lazy" alt="Screenshot of the space rendering engine."></img>
-        </div>
-        <div class="clipboard-title">Solar System Rendering Engine</div>
-        This space simulation is a C++ project built using the OpenGL rendering pipeline to display complex 3D models with lighting and texturing.
-        This project garnered valuable experience with the GLSL shader language, matrix mathematics, graphics engine development, and API integration with libraries such as Assimp (model loading) and STB Image (texture processing).
-        <br>
-        The interactable model of the solar system includes both planetary orbit mode and a first-person flight mode to enhance exploration. To enhance the graphical fidelity, the project incorporates bloom and HDR buffers, normal mapping, and emissive lighting maps.
-        To boost the runtime performance, object instancing was implemented to efficiently render asteroid belts.
-        Check out the repository <a href="https://github.com/andy-wittig/OpenGL-Space-Exploration-Engine" target="_blank">here</a>.
-    </div>
-    `;
-
-    projectPages[1] = `
-    <div class="clipboard-text">
-        <div id="left-side-content">
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/MpCnNgofuI0?si=uYQaz0UA1oEiKvpD?mute=1" allowfullscreen></iframe>
-            <iframe frameborder="0" src="https://itch.io/embed/3137058?linkback=true" width="552" height="167"><a href="https://strangefew.itch.io/deadhelm-demo">Deadhelm by Strange Few Studios</a></iframe>
-        </div>
-    <div class="clipboard-title">Indepedent Video Game Production</div>
-    This <a href="https://strangefew.itch.io/deadhelm-demo" target="_blank">project</a> was developed over the course of a year, with all art, game design, programming, audio, and system design created independently.
-    The original soundtrack was generously contributed by a close friend.
-    Built using GDScript in the Godot engine, this game features a custom inventory management system, saving/loading functionality via file management, a modular animation system, complex state-machines for character interaction and physics control,
-    and object-oriented programming for reusable, maintainable game logic--especially for enemy behavior and interaction.
-    This game also includes a fully functional user interface designed to assist user experience, supporting menu navigation, control remapping, graphical and audio adjustments, and live tracking of in-game statistics.
-    </div>
-    `;
-
-    projectPages[2] = `
-    <div class="clipboard-text">
-        <div class="clipboard-text" style="text-align: center;">
-            <b><u>WebGL Physically Based Rendering</b></u>
-        </div>
-        This portfolio website is run using WebGL 2.0!
-        While higher-level APIs are avaiable like Three.js to easily construct 3D scenes, I instead chose to challenge myself by powering this website with custom a graphics engine using only WebGL.
-        The first problem to overcome was loading 3D model file data. To solve this, I wrote a custom .obj parser that formats object data in a way compatible with the WebGL pipeline.
-        After a model is loaded its assigned to physically based rendering (PBR) texture maps to simulate realistic lighting and surface details.
-        I created all the models in Blender and baked their corresponding textures for use in the engine.
-        To simulate ambient lighting on object surfaces, HDR images are used to generate irradiance maps and Look up Tables (LUTs) that dynamically adjust lighting and reflections based on the surrounding environment.
-        By converting world coordinates to screen space, HTML elements are overlaid and tracked onto 3D objects to populate the sites content.
-        The background image on the home page is also generated using WebGL. I implemented Perlin noise generation with shaders and rendered it to a background quad. 
-        This produced a dynamic and animated page background that enhances the sites visual interest. Repository linked <a href="https://github.com/andy-wittig/Andrew-Wittig-Portfolio" target="_blank">here!</a>
-    </div>
-    `;
+    const clipboardPages = {
+        [aboutPageID]:["Clipboard Content/about-page1.html", "Clipboard Content/about-page2.html"],
+        [projectPageID]:["Clipboard Content/project-page1.html", "Clipboard Content/project-page2.html", "Clipboard Content/project-page3.html"],
+        [skillPageID]:["Clipboard Content/skill-page1.html"]
+    };
     
     function updatePage()
     {
         divPageIndicator.replaceChildren();
         let indicators = divPageIndicator.children;
+        let currentPageID = selectedObject.getID().toString();
+        let pageLength = clipboardPages[currentPageID].length;
 
-        for (let i = 0; i < pageIDList.length; i++)
+        pageCount = Math.max(0, Math.min(pageCount, pageLength - 1)); //clamp pages
+
+        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
+        else { clipboardLeftButton.disabled = false; }
+        if (pageCount == pageLength - 1) { clipboardRightButton.disabled = true; }
+        else { clipboardRightButton.disabled = false; }
+
+        for (let i = 0; i < pageLength; i++) //Set page indicators
         {
-            if (pageIDList[i] == selectedObject.getID())
-            {
-                switch (i)
-                {
-                    case 0: //About page
-                        pageCount = Math.max(0, Math.min(pageCount, aboutPages.length - 1)); //clamp pages
-
-                        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-                        else { clipboardLeftButton.disabled = false; }
-                        if (pageCount == aboutPages.length - 1) { clipboardRightButton.disabled = true; }
-                        else { clipboardRightButton.disabled = false; }
-
-                        for (let i = 0; i < aboutPages.length; i++)
-                        {
-                            const indicatorBullet = document.createElement("span");
-                            divPageIndicator.append(indicatorBullet);
-                            indicatorBullet.innerHTML = "&#9702;";
-                        }
-                        indicators[pageCount].innerHTML = "&#8226;";
-                        divClipboard.innerHTML = aboutPages[pageCount];
-
-                        break;
-                    case 1: //Project page
-                        pageCount = Math.max(0, Math.min(pageCount, projectPages.length - 1)); //clamp pages
-
-                        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-                        else { clipboardLeftButton.disabled = false; }
-                        if (pageCount == projectPages.length - 1) { clipboardRightButton.disabled = true; }
-                        else { clipboardRightButton.disabled = false; }
-
-                        for (let i = 0; i < projectPages.length; i++)
-                        {
-                            const indicatorBullet = document.createElement("span");
-                            divPageIndicator.append(indicatorBullet);
-                            indicatorBullet.innerHTML = "&#9702;";
-                        }
-                        indicators[pageCount].innerHTML = "&#8226;";
-                        divClipboard.innerHTML = projectPages[pageCount];
-
-                        break;
-                    case 2: //Skill page
-                        pageCount = Math.max(0, Math.min(pageCount, skillPages.length - 1)); //clamp pages
-
-                        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-                        else { clipboardLeftButton.disabled = false; }
-                        if (pageCount == skillPages.length - 1) { clipboardRightButton.disabled = true; }
-                        else { clipboardRightButton.disabled = false; }
-
-                        for (let i = 0; i < skillPages.length; i++)
-                        {
-                            const indicatorBullet = document.createElement("span");
-                            divPageIndicator.append(indicatorBullet);
-                            indicatorBullet.innerHTML = "&#9702;";
-                        }
-                        indicators[pageCount].innerHTML = "&#8226;";
-                        divClipboard.innerHTML = skillPages[pageCount];
-                        break;
-                }
-            }
+            const indicatorBullet = document.createElement("span");
+            divPageIndicator.append(indicatorBullet);
+            indicatorBullet.innerHTML = "&#9702;";
         }
+        indicators[pageCount].innerHTML = "&#8226;";
+
+        //Fetch HTML page content
+        fetch (clipboardPages[currentPageID][pageCount])
+            .then (response => response.text())
+            .then (htmlContent => {
+                divClipboard.innerHTML = htmlContent;
+            })
+            .catch (err => {
+                console.error("Could not fetch the HTML file: ", err);
+            });
     }
     updatePage(); //update at start
 

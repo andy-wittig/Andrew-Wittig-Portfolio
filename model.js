@@ -61,6 +61,7 @@ export default class Model
             this.textureCoords = mLoader.getUV();
             this.tangents = mLoader.getTangents();
             this.indices = mLoader.getIndices();
+            this.indexCount = this.indices.length;
 
             this.objectVAO = gl.createVertexArray();
 
@@ -132,7 +133,7 @@ export default class Model
     {
         gl.bindVertexArray(this.objectVAO);
         
-        if (shader !== null)
+        if (shader)
         {
             gl.uniform1i(shader.getUniformLocation("albedoMap"), 0);
             gl.activeTexture(gl.TEXTURE0);
@@ -155,9 +156,7 @@ export default class Model
             gl.bindTexture(gl.TEXTURE_2D, this.ao || this.defaultWhite);
         } 
 
-        gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
-
-        gl.bindVertexArray(null);
+        gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
     }
 
     setID(id)

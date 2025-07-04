@@ -22,8 +22,6 @@ export default class Shader
             //Load Shaders From File
             this.vertexShaderText = await loadShaderFile(this.vertexShaderPath);
             this.fragmentShaderText = await loadShaderFile(this.fragmentShaderPath);
-            //console.log(this.vertexShaderText);
-            //console.log(this.fragmentShaderText);
             
             //Compile Shaders
             const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -65,6 +63,8 @@ export default class Shader
             }
 
             //Free Memory
+            gl.detachShader(this.shaderProgram, vertexShader);
+            gl.detachShader(this.shaderProgram, fragmentShader);
             gl.deleteShader(vertexShader);
             gl.deleteShader(fragmentShader);
         }
@@ -80,7 +80,7 @@ export default class Shader
         const location = gl.getAttribLocation(this.shaderProgram, attribName);
         if (location < 0)
         {
-            console.log(`Failed to get attribute location for: ${attribName}`);
+            console.error(`Failed to get attribute location for: ${attribName}`);
         }
         return location;
     }
@@ -90,13 +90,29 @@ export default class Shader
         const location = gl.getUniformLocation(this.shaderProgram, uniformName);
         if (location === null)
         {
-            console.log(`Failed to get uniform location for: ${uniformName}`);
+            console.error(`Failed to get uniform location for: ${uniformName}`);
         }
         return location;
     }
 
     enableShader()
     {
-        gl.useProgram(this.shaderProgram);
+        if (this.shaderProgram)
+        {
+            gl.useProgram(this.shaderProgram);
+        }
+        else
+        {
+            console.error("There was no shader found to be enabled.");
+        }
+    }
+
+    destroyShader()
+    {
+        if (this.shaderProgram)
+        {
+            gl.deleteProgram(this.shaderProgram);
+            this.shaderProgram = null;
+        }
     }
 }

@@ -287,6 +287,12 @@ mBrdfShader.enableShader();
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 mQuad.render();
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+//Cleanup Shaders
+mCubemapShader.destroyShader()
+mConvolutionShader.destroyShader()
+mPrefilterShader.destroyShader()
+mBrdfShader.destroyShader()
 //--------------------End PBR Framebuffers--------------------
 
 //--------------------Object ID--------------------
@@ -331,7 +337,7 @@ function assignUniqueID()
 //--------------------Rendering Initialization--------------------
 await mPickingShader.Initialize();
 await mShader.Initialize();
-await mSkyboxShader.Initialize();
+//await mSkyboxShader.Initialize(); //--Enable when drawing the skybox
 await mNoiseShader.Initialize();
 
 await mMonitor.Initialize();
@@ -1004,7 +1010,7 @@ async function runEngine()
         //--------------------End Scene 2--------------------
 
         /* 
-        //Skybox for testing purposes
+        //Skybox for testing purposes -- make sure to re-enable shader initialization
         gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.CULL_FACE);
 

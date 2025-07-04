@@ -186,6 +186,7 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+mCubemapShader.destroyShader()
 
 //Irradiance Map
 const irradianceMap = gl.createTexture();
@@ -221,6 +222,7 @@ for (let i = 0; i < 6; i++)
     mCube.render();
 }
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+mConvolutionShader.destroyShader()
 
 //Pre-filter Cubemap
 const prefilterMap = gl.createTexture();
@@ -265,6 +267,7 @@ for (let mip = 0; mip < maxMipLevels; mip++)
     }
 }
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+mPrefilterShader.destroyShader()
 
 //Generate 2D LUT
 const brdfLUTTexture = gl.createTexture();
@@ -287,12 +290,8 @@ mBrdfShader.enableShader();
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 mQuad.render();
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-//Cleanup Shaders
-mCubemapShader.destroyShader()
-mConvolutionShader.destroyShader()
-mPrefilterShader.destroyShader()
 mBrdfShader.destroyShader()
+
 //--------------------End PBR Framebuffers--------------------
 
 //--------------------Object ID--------------------
@@ -335,21 +334,22 @@ function assignUniqueID()
 //--------------------End Object ID--------------------
 
 //--------------------Rendering Initialization--------------------
-await mPickingShader.Initialize();
-await mShader.Initialize();
-//await mSkyboxShader.Initialize(); //--Enable when drawing the skybox
-await mNoiseShader.Initialize();
-
-await mMonitor.Initialize();
-await mMonitor2.Initialize();
-await mMonitor3.Initialize();
-await mClipBoard.Initialize();
-await mDesk.Initialize();
-await mMug.Initialize();
-await mPen.Initialize();
-await mPhone.Initialize();
-await mPlant.Initialize();
-await mNote.Initialize();
+await Promise.all([ //Run in parallel
+    await mPickingShader.Initialize(),
+    await mShader.Initialize(),
+    //await mSkyboxShader.Initialize(), //--Enable when drawing the skybox
+    await mNoiseShader.Initialize(),
+    await mMonitor.Initialize(),
+    await mMonitor2.Initialize(),
+    await mMonitor3.Initialize(),
+    await mClipBoard.Initialize(),
+    await mDesk.Initialize(),
+    await mMug.Initialize(),
+    await mPen.Initialize(),
+    await mPhone.Initialize(),
+    await mPlant.Initialize(),
+    await mNote.Initialize()
+]);
 
 mMonitor.setID(assignUniqueID());
 mMonitor2.setID(assignUniqueID());

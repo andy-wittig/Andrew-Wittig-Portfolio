@@ -4,7 +4,7 @@ export default class modelLoader
     {
         const response = await fetch (path);
         const text = await response.text();
-        this.result = await this.parseModel(text);
+        this.result = this.parseModel(text);
     }
 
     getVertices() { return this.result[0]; }
@@ -13,29 +13,31 @@ export default class modelLoader
     getIndices() { return this.result[3]; }
     getTangents() { return this.result[4]; }
 
-    async parseModel(data)
+    parseModel(data)
     {
         const lines = data.split("\n");
         
-        var aCache = {} //reusable vertices
-        var cVert = [], cUV = [], cNorm = []; //Raw data
-        var fVert = [], fUV = [], fNorm = [], fIndex = [], tangents = []; //Final rendering data
+        let aCache = {} //reusable vertices
+        let cVert = [], cUV = [], cNorm = []; //Raw data
+        let fVert = [], fUV = [], fNorm = [], fIndex = [], tangents = []; //Final rendering data
 
-        var faceParts;
-        var fIndexCnt = 0;
+        let fIndexCnt = 0;
+        let faceParts = "";
         
         for (const line of lines)
         {
             const fixedLine = line.trim(); //removes surrounding whitespace
             if (!fixedLine || fixedLine.startsWith("#")) { continue; } //skip comments and empty lines
 
-            switch(fixedLine.charAt(0))
+            const firstChar = fixedLine.charAt(0);
+            const secondChar = fixedLine.charAt(1);
+
+            switch(firstChar)
             {
                 case "v":
-                    faceParts = fixedLine.split(" "); //creates an array of substrings divided by a single whitespace
-                    faceParts.shift(); //removes first element
+                    faceParts = fixedLine.split(/\s+/).slice(1);
 
-                    switch (fixedLine.charAt(1))
+                    switch (secondChar)
                     {
                         case " ": //Vertex position
                             cVert.push(parseFloat(faceParts[0]), parseFloat(faceParts[1]), parseFloat(faceParts[2])); //parseFloat converts string into floating-point representation
@@ -49,8 +51,7 @@ export default class modelLoader
                     } 
                     break;
                 case "f":
-                    faceParts = fixedLine.split(" "); //split face into three vertex parts with corresponding UV and normal indices
-                    faceParts.shift();
+                    faceParts = fixedLine.split(/\s+/).slice(1);
 
                     for (let i = 0; i < faceParts.length; i++)
                     {
@@ -62,16 +63,13 @@ export default class modelLoader
                         }
                         else
                         {
-                            let ind;
-                            //Vertex
-                            ind = (parseInt(vertexData[0]) - 1) * 3; //0-based indexing instead op 1-based
-                            fVert.push(cVert[ind], cVert[ind + 1], cVert[ind + 2]);
-                            //UV
-                            ind = (parseInt(vertexData[1]) - 1) * 2;
-                            fUV.push(cUV[ind], cUV[ind + 1]); //flip Y UV
-                            //Normal
-                            ind = (parseInt(vertexData[2]) - 1) * 3;
-                            fNorm.push(cNorm[ind], cNorm[ind + 1], cNorm[ind + 2]);
+                            const vi = (parseInt(vertexData[0])  - 1) * 3; //0-based indexing instead of 1-based
+                            const ti = (parseInt(vertexData[1])  - 1) * 2;
+                            const ni = (parseInt(vertexData[2])  - 1) * 3;
+                            
+                            fVert.push(cVert[vi], cVert[vi + 1], cVert[vi + 2]);
+                            fUV.push(cUV[ti], cUV[ti + 1]); //flip Y UV
+                            fNorm.push(cNorm[ni], cNorm[ni + 1], cNorm[ni + 2]);
                             
                             aCache[faceParts[i]] = fIndexCnt;
                             fIndex.push(fIndexCnt);

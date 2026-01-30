@@ -1,18 +1,18 @@
-//Imports
+//---Dependencies---
 import Shader from "./shader.js"
 import Model from "./model.js"
 
-//Get WebGL Context
-const canvas = document.getElementById("main-canvas");
+//---WebGL Context---
+const canvas = document.getElementById("main-canvas"); // Get canvas reference
 if (!canvas)
 {
-    console.log("Cannot get monitor canvas reference.");
+    console.log("Cannot get the monitor canvas reference!");
 }
 
 const gl = canvas.getContext("webgl2");
 if (!gl)
 {
-    console.log("This browser doesn't support WebGL 2.");
+    console.log("This sites cannot be displayed as your browser doesn't support WebGL 2.");
 }
 
 gl.getExtension("EXT_color_buffer_float");
@@ -81,7 +81,7 @@ window.onload = function()
 {
     if (localStorage.getItem("firstVisit") === null)
     {
-        console.log("Hey!");
+        console.log("Site has been visited for the first time, storing this visit in cache.");
         localStorage.setItem("firstVisit", "true");
         const divFirstVisit = document.createElement("div");
         divFirstVisit.className = "first-visit";
@@ -312,7 +312,6 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 mQuad.render();
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 mBrdfShader.destroyShader()
-
 //--------------------End PBR Framebuffers--------------------
 
 //--------------------Object ID--------------------
@@ -380,12 +379,12 @@ mMonitor.setName("<b>About Me</b>");
 mMonitor.setDescription("I spend my time creating immersive experiences within websites, programs, and games.");
 
 mMonitor2.setName("<b>Projects</b>");
-mMonitor2.setDescription("Check below to read all about the projects I've been developing!");
+mMonitor2.setDescription("Scroll down to read more about the projects I've been developing!");
 
 mMonitor3.setName("<b>Skills</b>");
 mMonitor3.setDescription(`
 <ul>
-<li>C++, Python</li>
+<li>C++, C#, Python</li>
 <li>Javascript, HTML, CSS</li>
 <li>WebGL, OpenGL</li>
 </ul> 
@@ -436,7 +435,7 @@ catch (e)
 let deltaTime = 0;
 async function runEngine()
 {
-    divLoadingContainer.remove();
+    divLoadingContainer.remove(); //Loading has been completed, so remove the loading information.
 
     divContainer.append(iconAnglesDown);
     clipboardLeftButton.append(iconChevronLeft);
@@ -451,7 +450,7 @@ async function runEngine()
     divClipboardContainer.append(divNote);
     divContainer.append(divClipboardContainer);
 
-    //Monitor Camera
+    //Scene 1 Camera
     let firstClick = false;
     const cameraStartRadius = 12;
     const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 1.5, (cameraStartRadius) * Math.cos(degToRad(0))];
@@ -459,7 +458,8 @@ async function runEngine()
     const cameraFov = 60;
     const cameraRadius = 10;
     const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
-    //Clipboard Camera
+    
+    //Scene 2 Camera
     const camera2Fov = 60;
     const cameraView2 = [[0, 1.6, 3.1], [0, .35, .8], [0, 1, 0]];
     
@@ -762,9 +762,10 @@ async function runEngine()
     const skillPageID = mMonitor3.getID()
 
     const clipboardPages = {
-        [aboutPageID]:["Clipboard Content/about-page1.html", "Clipboard Content/about-page2.html"],
-        [projectPageID]:["Clipboard Content/project-page1.html", "Clipboard Content/project-page2.html", "Clipboard Content/project-page3.html"],
-        [skillPageID]:["Clipboard Content/skill-page1.html"]
+        [aboutPageID]:["Clipboard Content/About Pages/about-page1.html", "Clipboard Content/About Pages/about-page2.html"],
+        [projectPageID]:["Clipboard Content/Project Pages/project-page1.html", "Clipboard Content/Project Pages/project-page2.html",
+                        "Clipboard Content/Project Pages/project-page3.html", "Clipboard Content/Project Pages/project-page4.html"],
+        [skillPageID]:["Clipboard Content/Skill Pages/skill-page1.html"]
     };
     
     function updatePage()

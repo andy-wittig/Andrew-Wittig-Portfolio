@@ -23,7 +23,7 @@ export default class Animator
         this.clipboardAnimProgress = 0;
         this.startClipboardAnim = false;
         this.flipSlide = false;
-        this.slideIn = false;
+        this.slideRight = false;
     }
 
     StartCameraAnimation(rotation = this.animCameraStepRotation, position = this.animCameraStepPosition, radius = this.animCameraStepRadius)
@@ -60,11 +60,11 @@ export default class Animator
         return cameraView;
     }
 
-    StartClipboardAnimation(slideIn)
+    StartClipboardAnimation(slideRight)
     {
         this.clipboardAnimProgress = 0;
         this.startClipboardAnim = true;
-        this.slideIn = slideIn; //When false, the clipboard slides to the left.
+        this.slideRight = slideRight; //When false, the clipboard slides to the left.
         this.flipSlide = false;
     }
 
@@ -72,17 +72,17 @@ export default class Animator
     {
         let startPos, endPos;
 
-        if (!this.slideIn && !this.flipSlide) //Left button clicked
+        if (!this.slideRight && !this.flipSlide) //Left button clicked
         {
             startPos = this.clipboardStartingPos;
             endPos = this.clipboardSlideLeftPos;
         }
-        else if (!this.slideIn && this.flipSlide)
+        else if (!this.slideRight && this.flipSlide)
         {
             startPos = this.clipboardSlideRightPos;
             endPos = this.clipboardStartingPos;
         }
-        else if (this.slideIn && !this.flipSlide) //Right button
+        else if (this.slideRight && !this.flipSlide) //Right button
         {
             startPos = this.clipboardStartingPos;
             endPos = this.clipboardSlideRightPos;

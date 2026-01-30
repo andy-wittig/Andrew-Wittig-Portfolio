@@ -335,8 +335,7 @@ gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
 let deltaTime = 0;
 async function InitEngine()
 {
-    siteContentHandler.InitHTMLElements();
-
+    //---Variables---
     //Scene 1 Camera
     let firstClick = false;
     const cameraStartRadius = 12;
@@ -363,39 +362,29 @@ async function InitEngine()
     const clipboardAnimator = new Animator();
     mClipBoard.setPosition(clipboardAnimator.clipboardStartingPos);
 
-    //Pages
-    let pageCount = 0;
+    //---Initialization---
+    siteContentHandler.InitHTMLElements();
+    siteContentHandler.UpdatePage(selectedObject.getID().toString());
 
-    function clipboardLeftClick()
+    function UpdatePageCallback()
     {
-        if (!clipboardAnimator.startClipboardAnim) 
-        {
-            pageCount -= 1;
-            
-            siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
-            siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
-            siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
-            siteContentHandler.clipboardRightButton.classList.add("anim-fadeout-in");
-            siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
-            siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
-
-            clipboardAnimator.StartClipboardAnimation(false);
-        }
+        siteContentHandler.UpdatePage(selectedObject.getID().toString())
     }
-    function clipboardRightClick()
+
+    function ClipboardClick(isRightClick)
     {
         if (!clipboardAnimator.startClipboardAnim) 
         {
-            pageCount += 1;
-
+            siteContentHandler.pageCount += isRightClick ? 1 : -1;
+            
             siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
             siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
             siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
             siteContentHandler.clipboardRightButton.classList.add("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
-            
-            clipboardAnimator.StartClipboardAnimation(true);
+
+            clipboardAnimator.StartClipboardAnimation(isRightClick);
         }
     }
     //--------------------End Clipboard Animation--------------------
@@ -431,8 +420,8 @@ async function InitEngine()
                 selectedObject = Model;
 
                 //Reset page count to first page.
-                pageCount = 0;
-                updatePage();
+                siteContentHandler.pageCount = 0;
+                siteContentHandler.UpdatePage(selectedObject.getID().toString());
 
                 if (!firstClick)
                 {
@@ -547,52 +536,7 @@ async function InitEngine()
             showDescription = false;
         }
     }
-
     //--------------------Clipboard Content--------------------
-    const aboutPageID = mMonitor.getID()
-    const projectPageID = mMonitor2.getID()
-    const skillPageID = mMonitor3.getID()
-
-    const clipboardPages = {
-        [aboutPageID]:["Clipboard Content/About Pages/about-page1.html", "Clipboard Content/About Pages/about-page2.html"],
-        [projectPageID]:["Clipboard Content/Project Pages/project-page1.html", "Clipboard Content/Project Pages/project-page2.html",
-                        "Clipboard Content/Project Pages/project-page3.html", "Clipboard Content/Project Pages/project-page4.html"],
-        [skillPageID]:["Clipboard Content/Skill Pages/skill-page1.html"]
-    };
-    
-    function updatePage() //ISSUE: Put this in SiteContentHandler
-    {
-        siteContentHandler.divPageIndicator.replaceChildren();
-        let indicators = siteContentHandler.divPageIndicator.children;
-        let currentPageID = selectedObject.getID().toString();
-        let pageLength = clipboardPages[currentPageID].length;
-
-        pageCount = Math.max(0, Math.min(pageCount, pageLength - 1)); //clamp pages
-
-        if (pageCount == 0) { siteContentHandler.clipboardLeftButton.disabled = true; }
-        else { siteContentHandler.clipboardLeftButton.disabled = false; }
-        if (pageCount == pageLength - 1) { siteContentHandler.clipboardRightButton.disabled = true; }
-        else { siteContentHandler.clipboardRightButton.disabled = false; }
-
-        for (let i = 0; i < pageLength; i++) //Set page indicators
-        {
-            const indicatorBullet = document.createElement("span");
-            siteContentHandler.divPageIndicator.append(indicatorBullet);
-            indicatorBullet.innerHTML = "&#9702;";
-        }
-        indicators[pageCount].innerHTML = "&#8226;";
-
-        //Fetch HTML page content
-        fetch (clipboardPages[currentPageID][pageCount])
-            .then (response => response.text())
-            .then (htmlContent => {
-                siteContentHandler.divClipboard.innerHTML = htmlContent;
-            })
-            .catch (err => {
-                console.error("Could not fetch the HTML file: ", err);
-            });
-    }
-    updatePage(); //update at start
 
     function renderClipboardContent()
     {
@@ -813,7 +757,7 @@ async function InitEngine()
         //Animations
         if (clipboardAnimator.startClipboardAnim)
         {
-            mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime, updatePage));
+            mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime, UpdatePageCallback));
         }
         else
         {
@@ -895,8 +839,8 @@ async function InitEngine()
         showDescription = true;
     });
 
-    siteContentHandler.clipboardLeftButton.addEventListener("click", clipboardLeftClick);
-    siteContentHandler.clipboardRightButton.addEventListener("click", clipboardRightClick);
+    siteContentHandler.clipboardLeftButton.addEventListener("click", () => ClipboardClick(false));
+    siteContentHandler.clipboardRightButton.addEventListener("click", () => ClipboardClick(true));
 
     document.addEventListener("scroll", () => {
         let currentScrollPos = window.scrollY;

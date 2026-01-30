@@ -40,6 +40,15 @@ export default class SiteContentHandler
         this.divMonitorName = document.createElement("div");
         this.divMonitorDesc = document.createElement("div");
 
+        //Pages
+        this.pageCount = 0;
+        this.clipboardPages = {
+        [[1, 0, 0, 1]]:["Clipboard Content/About Pages/about-page1.html", "Clipboard Content/About Pages/about-page2.html"],
+        [[0, 1, 0, 1]]:["Clipboard Content/Project Pages/project-page1.html", "Clipboard Content/Project Pages/project-page2.html",
+                        "Clipboard Content/Project Pages/project-page3.html", "Clipboard Content/Project Pages/project-page4.html"],
+        [[0, 0, 1, 1]]:["Clipboard Content/Skill Pages/skill-page1.html"]
+    };
+
         this.InitLoading()
     }
 
@@ -81,5 +90,37 @@ export default class SiteContentHandler
         this.divClipboardContainer.append(this.divClipboard);
         this.divClipboardContainer.append(this.divNote);
         this.divContainer.append(this.divClipboardContainer);
+    }
+
+    UpdatePage(currentPageID)
+    {
+        this.divPageIndicator.replaceChildren();
+        let indicators = this.divPageIndicator.children;
+        let pageLength = this.clipboardPages[currentPageID].length;
+
+        this.pageCount = Math.max(0, Math.min(this.pageCount, pageLength - 1)); //clamp pages
+
+        if (this.pageCount == 0) { this.clipboardLeftButton.disabled = true; }
+        else { this.clipboardLeftButton.disabled = false; }
+        if (this.pageCount == pageLength - 1) { this.clipboardRightButton.disabled = true; }
+        else { this.clipboardRightButton.disabled = false; }
+
+        for (let i = 0; i < pageLength; i++) //Set page indicators
+        {
+            const indicatorBullet = document.createElement("span");
+            this.divPageIndicator.append(indicatorBullet);
+            indicatorBullet.innerHTML = "&#9702;";
+        }
+        indicators[this.pageCount].innerHTML = "&#8226;";
+
+        //Fetch HTML page content
+        fetch (this.clipboardPages[currentPageID][this.pageCount])
+            .then (response => response.text())
+            .then (htmlContent => {
+                this.divClipboard.innerHTML = htmlContent;
+            })
+            .catch (err => {
+                console.error("Could not fetch the HTML file: ", err);
+            });
     }
 }

@@ -34,13 +34,13 @@ const mMonitor      = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse
 const mMonitor2     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
 const mMonitor3     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
 const mClipBoard    = new Model("Models/clipboard.obj", "Textures/Clipboard/clipboard_diffuse.png", "Textures/Clipboard/clipboard_normal.png",
-                                "Textures/Clipboard/clipboard_metallic.png", "Textures/Clipboard/clipboard_roughness.png", "Textures/Clipboard/clipboard_ao.png");
+                                "Textures/Clipboard/clipboard_metallic.png", "Textures/Clipboard/clipboard_roughness.png", null);
 const mDesk         = new Model("Models/desk.obj", "Textures/Wood/wood_diffuse.png", "Textures/Wood/wood_normal.png", null, "Textures/desk_roughness.png", null);
 const mMug          = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
 const mPen          = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
-const mPhone        = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
+const mPhone        = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", null);
 const mPlant        = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
-const mNote         = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", "Textures/Sticky Note/ao.png");
+const mNote         = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", null);
 const mCube         = new Model("Models/cube.obj");
 const mQuad         = new Model("Models/quad.obj");
 

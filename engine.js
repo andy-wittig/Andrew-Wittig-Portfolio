@@ -557,18 +557,20 @@ async function InitEngine()
 
     function RenderNoteContent()
     {
-        let notePos = GetScreenPosFromObject([-.1, 0, 0, 1], mNote, false);
+        let notePosTopLeft = GetScreenPosFromObject([-.11, 0, 0, 1], mNote, false);
 
         siteContentHandler.divNote.innerHTML = `
         <strong>
         Contact Me!
         <br>
         (775) 409-9505
+        <br>
+        andywittig10@gmail.com
         </strong>
         `;
 
-        siteContentHandler.divNote.style.left = Math.floor(notePos[0]) + "px"; 
-        siteContentHandler.divNote.style.top = Math.floor(notePos[1]) + "px";
+        siteContentHandler.divNote.style.left = Math.floor(notePosTopLeft[0]) + "px"; 
+        siteContentHandler.divNote.style.top = Math.floor(notePosTopLeft[1]) + "px";
     }
 
     //---Animation Functions---

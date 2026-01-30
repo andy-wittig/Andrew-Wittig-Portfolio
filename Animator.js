@@ -17,6 +17,7 @@ export default class Animator
         this.animCameraProgress = 0;
 
         //Clipboard Animation
+        this.clipboardStartingPos = [0, 1.02, 2.05];
         this.clipboardSlideLeftPos = [-4, 1.02, 2.05];
         this.clipboardSlideRightPos = [4, 1.02, 2.05];
         this.clipboardAnimProgress = 0;
@@ -59,15 +60,15 @@ export default class Animator
         return cameraView;
     }
 
-    StartClipboardAnimation(slideIn, flipSlide)
+    StartClipboardAnimation(slideIn)
     {
         this.clipboardAnimProgress = 0;
         this.startClipboardAnim = true;
         this.slideIn = slideIn; //When false, the clipboard slides to the left.
-        this.flipSlide = flipSlide;
+        this.flipSlide = false;
     }
 
-    ClipboardAnimate(time)
+    ClipboardAnimate(time, callback)
     {
         let startPos, endPos;
 
@@ -86,7 +87,7 @@ export default class Animator
             startPos = this.clipboardStartingPos;
             endPos = this.clipboardSlideRightPos;
         }
-        else if (this.slideIn && this.flipSlide)
+        else
         {
             startPos = this.clipboardSlideLeftPos;
             endPos = this.clipboardStartingPos;
@@ -101,9 +102,10 @@ export default class Animator
         const animY = startPos[1] + (endPos[1] - startPos[1]) * easedProgress;
         const animZ = startPos[2] + (endPos[2] - startPos[2]) * easedProgress;
 
-        if (this.clipboardAnimProgress >= 0.5 && !this.flipSlide)
+        if (this.clipboardAnimProgress >= 0.5 && !this.flipSlide) //Halfway point
         {
             this.flipSlide = true;
+            callback();
         }
 
         if (this.clipboardAnimProgress == 1) 

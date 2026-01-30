@@ -321,9 +321,6 @@ mPhone.setPosition([-1.8, 0, 0.8]);
 mPhone.rotate(MathHelper.DegToRad(45), [0, 1, 0]);
 mPlant.setPosition([2, 0, -.8]);
 
-const clipboardStartingPos = [0, 1.02, 2.05];
-mClipBoard.setPosition(clipboardStartingPos);
-
 mShader.enableShader();
 gl.uniform1i(mShader.getUniformLocation("albedoMap"), 0);
 gl.uniform1i(mShader.getUniformLocation("normalMap"), 1);
@@ -364,19 +361,17 @@ async function InitEngine()
     let animRadiusFinal;
 
     const clipboardAnimator = new Animator();
+    mClipBoard.setPosition(clipboardAnimator.clipboardStartingPos);
 
+    //Pages
     let pageCount = 0;
-
-    mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime)); //This shouldn't run all the time.
-
-    let pageIt = 0;
-    //pageCount += pageIt;
-    //updatePage();
 
     function clipboardLeftClick()
     {
         if (!clipboardAnimator.startClipboardAnim) 
         {
+            pageCount -= 1;
+            
             siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
             siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
             siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
@@ -384,13 +379,15 @@ async function InitEngine()
             siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
 
-            clipboardAnimator.StartClipboardAnimation(false, false);
+            clipboardAnimator.StartClipboardAnimation(false);
         }
     }
     function clipboardRightClick()
     {
         if (!clipboardAnimator.startClipboardAnim) 
         {
+            pageCount += 1;
+
             siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
             siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
             siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
@@ -398,7 +395,7 @@ async function InitEngine()
             siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
             
-            clipboardAnimator.StartClipboardAnimation(true, false);
+            clipboardAnimator.StartClipboardAnimation(true);
         }
     }
     //--------------------End Clipboard Animation--------------------
@@ -433,7 +430,8 @@ async function InitEngine()
                 animRadiusFinal = cameraRadius;
                 selectedObject = Model;
 
-                pageCount = 0; //Reset page count
+                //Reset page count to first page.
+                pageCount = 0;
                 updatePage();
 
                 if (!firstClick)
@@ -562,7 +560,7 @@ async function InitEngine()
         [skillPageID]:["Clipboard Content/Skill Pages/skill-page1.html"]
     };
     
-    function updatePage()
+    function updatePage() //ISSUE: Put this in SiteContentHandler
     {
         siteContentHandler.divPageIndicator.replaceChildren();
         let indicators = siteContentHandler.divPageIndicator.children;
@@ -813,9 +811,9 @@ async function InitEngine()
         renderNoteContent();
 
         //Animations
-        if (startClipboardAnim)
+        if (clipboardAnimator.startClipboardAnim)
         {
-            clipboardAnimate(mClipBoard);
+            mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime, updatePage));
         }
         else
         {

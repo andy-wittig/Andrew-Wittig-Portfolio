@@ -39,7 +39,7 @@ const mDesk         = new Model("Models/desk.obj", "Textures/Wood/wood_diffuse.p
 const mMug          = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
 const mPen          = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
 const mPhone        = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", null);
-const mPlant        = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
+//const mPlant        = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
 const mNote         = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", null);
 const mCube         = new Model("Models/cube.obj");
 const mQuad         = new Model("Models/quad.obj");
@@ -278,7 +278,7 @@ await Promise.all([ //Run in parallel
     await mMug.Initialize(),
     await mPen.Initialize(),
     await mPhone.Initialize(),
-    await mPlant.Initialize(),
+    //await mPlant.Initialize(),
     await mNote.Initialize()
 ]);
 
@@ -319,7 +319,7 @@ mPen.setPosition([1.5, 0, 1]);
 mPen.rotate(MathHelper.DegToRad(10), [0, 1, 0]);
 mPhone.setPosition([-1.8, 0, 0.8]);
 mPhone.rotate(MathHelper.DegToRad(45), [0, 1, 0]);
-mPlant.setPosition([2, 0, -.8]);
+//mPlant.setPosition([2, 0, -.8]);
 
 mShader.enableShader();
 gl.uniform1i(mShader.getUniformLocation("albedoMap"), 0);
@@ -752,9 +752,9 @@ async function InitEngine()
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPhone.getModelMatrix()))));
         mPhone.render(mShader);
 
-        gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPlant.getModelMatrix());
-        gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPlant.getModelMatrix()))));
-        mPlant.render(mShader);
+        //gl.uniformMatrix4fv(mShader.getUniformLocation("modelMatrix"), false, mPlant.getModelMatrix());
+        //gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mPlant.getModelMatrix()))));
+        //mPlant.render(mShader);
 
         let newPos = vec3.create();
         vec3.add(newPos, mClipBoard.getPosition(), [-.28, .485, -.26]);

@@ -3,19 +3,14 @@ import Shader from "./shader.js"
 import Model from "./model.js"
 import MathHelper from "./MathHelper.js"
 import SiteContentHandler from "./SiteContentHandler.js";
+import Animator from "./Animator.js";
 
 //---WebGL Context---
 const canvas = document.getElementById("main-canvas"); // Get canvas reference
-if (!canvas)
-{
-    console.log("Cannot get the monitor canvas reference!");
-}
+if (!canvas) { console.log("Cannot get the monitor canvas reference!"); }
 
 const gl = canvas.getContext("webgl2");
-if (!gl)
-{
-    console.log("This sites cannot be displayed as your browser doesn't support WebGL 2.");
-}
+if (!gl) { console.log("This sites cannot be displayed as your browser doesn't support WebGL 2."); }
 
 gl.getExtension("EXT_color_buffer_float");
 
@@ -25,28 +20,29 @@ export default gl;
 const siteContentHandler = new SiteContentHandler();
 
 //---Shader Definitions---
-const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
-const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
-const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
-const mConvolutionShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentConvolutionShaderSource.glsl");
-const mPrefilterShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentPrefilterShaderSource.glsl");
-const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentBrdfShaderSource.glsl");
-//const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
-const mNoiseShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentNoiseShaderSource.glsl");
+const mShader               = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
+const mPickingShader        = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
+const mCubemapShader        = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
+const mConvolutionShader    = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentConvolutionShaderSource.glsl");
+const mPrefilterShader      = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentPrefilterShaderSource.glsl");
+const mBrdfShader           = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentBrdfShaderSource.glsl");
+//const mSkyboxShader       = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
+const mNoiseShader          = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentNoiseShaderSource.glsl");
 
 //---Model Definitions---
-const mMonitor = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mMonitor2 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mMonitor3 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mClipBoard = new Model("Models/clipboard.obj", "Textures/clipboard_diffuse.png", "Textures/clipboard_normal.png", "Textures/clipboard_metallic.png", "Textures/clipboard_roughness.png", "Textures/clipboard_ao.png");
-const mDesk = new Model("Models/desk.obj", "Textures/wood_diffuse.png", "Textures/wood_normal.png", null, "Textures/desk_roughness.png", null);
-const mMug = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
-const mPen = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
-const mPhone = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
-const mPlant = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
-const mNote = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", "Textures/Sticky Note/ao.png");
-const mCube = new Model("Models/cube.obj");
-const mQuad = new Model("Models/quad.obj");
+const mMonitor      = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor2     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor3     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mClipBoard    = new Model("Models/clipboard.obj", "Textures/Clipboard/clipboard_diffuse.png", "Textures/Clipboard/clipboard_normal.png",
+                                "Textures/Clipboard/clipboard_metallic.png", "Textures/Clipboard/clipboard_roughness.png", "Textures/Clipboard/clipboard_ao.png");
+const mDesk         = new Model("Models/desk.obj", "Textures/Wood/wood_diffuse.png", "Textures/Wood/wood_normal.png", null, "Textures/desk_roughness.png", null);
+const mMug          = new Model("Models/mug.obj", "Textures/Mug/diffuse.png", "Textures/Mug/normal.png", "Textures/Mug/metallic.png", "Textures/Mug/roughness.png", null);
+const mPen          = new Model("Models/pen.obj", "Textures/pen_diffuse.png", "Textures/pen_normal.png", null, null, null);
+const mPhone        = new Model("Models/phone.obj", "Textures/Phone/diffuse.png", "Textures/Phone/normal.png", null, "Textures/Phone/roughness.png", "Textures/Phone/ao.png");
+const mPlant        = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Textures/Plant/normal.png", null, "Textures/Plant/roughness.png", null);
+const mNote         = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", "Textures/Sticky Note/ao.png");
+const mCube         = new Model("Models/cube.obj");
+const mQuad         = new Model("Models/quad.obj");
 
 //--------------------Picking Frambuffer--------------------
 const targetTexture = gl.createTexture();
@@ -55,7 +51,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-//depth renderbuffer
+//---Depth Renderbuffer---
 const depthBuffer = gl.createRenderbuffer();
 gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
 
@@ -72,7 +68,6 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, 0);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-//--------------------End Picking Buffer--------------------
 
 //--------------------PBR Framebuffers--------------------
 gl.enable(gl.DEPTH_TEST);
@@ -87,7 +82,7 @@ gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
 gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, captureRBO);
 
-//Load HDR environment map
+//---Load HDR Environment Map---
 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //flip textures
 
 const hdrTexture = gl.createTexture();
@@ -110,7 +105,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-//Setup Cubemap
+//---Setup Cubemap---
 const envCubemap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 for (let i = 0; i < 6; i++)
@@ -123,7 +118,7 @@ gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-//Convert HDR equirectangular environment map to cubemap
+//Convert HDR Equirectangular Environment Map to Cubemap
 const captureProjection = mat4.perspective(mat4.create(), MathHelper.DegToRad(90), 1.0, 0.1, 10.0);
 const captureViews = [
     mat4.lookAt(mat4.create(), [0, 0, 0], [1, 0, 0], [0, -1, 0]),
@@ -164,7 +159,7 @@ gl.bindTexture(gl.TEXTURE_CUBE_MAP, envCubemap);
 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 mCubemapShader.destroyShader()
 
-//Irradiance Map
+//---Irradiance Map---
 const irradianceMap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
 
@@ -200,7 +195,7 @@ for (let i = 0; i < 6; i++)
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 mConvolutionShader.destroyShader()
 
-//Pre-filter Cubemap
+//---Pre-filter Cubemap---
 const prefilterMap = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
 
@@ -245,7 +240,7 @@ for (let mip = 0; mip < maxMipLevels; mip++)
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 mPrefilterShader.destroyShader()
 
-//Generate 2D LUT
+//---Generate 2D LUT---
 const brdfLUTTexture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, brdfLUTTexture);
 
@@ -267,52 +262,13 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 mQuad.render();
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 mBrdfShader.destroyShader()
-//--------------------End PBR Framebuffers--------------------
-
-//--------------------Object ID--------------------
-function checkDuplicate(array1, array2)
-{
-    if (array1.length !== array2.length) { return false; }
-
-    for (let i = 0; i < array1.length; i++)
-    {
-        if (array1[i] !== array2[i]) { return false; }
-    }
-    
-    return true;
-}
-
-let id_list = [];
-function assignUniqueID()
-{
-    while (true)
-    {
-        const new_id = [(Math.floor(Math.random() * 255) + 1) / 255, 
-                        (Math.floor(Math.random() * 255) + 1) / 255, 
-                        (Math.floor(Math.random() * 255) + 1) / 255, 1.0];
-        
-        let isDuplicate = false;
-
-        for (let i = 0; i < id_list.length; i++)
-        {
-            isDuplicate = checkDuplicate(new_id, id_list[i]);
-            if (isDuplicate === true) { break; }
-        }
-
-        if (!isDuplicate)
-        {
-            id_list.push(new_id);
-            return new_id;
-        }
-    }
-}
-//--------------------End Object ID--------------------
 
 //--------------------Rendering Initialization--------------------
+//---Init Models---
 await Promise.all([ //Run in parallel
     await mPickingShader.Initialize(),
     await mShader.Initialize(),
-    //await mSkyboxShader.Initialize(), //--Enable when drawing the skybox
+    //await mSkyboxShader.Initialize(), //Enable when drawing the skybox
     await mNoiseShader.Initialize(),
     await mMonitor.Initialize(),
     await mMonitor2.Initialize(),
@@ -326,9 +282,10 @@ await Promise.all([ //Run in parallel
     await mNote.Initialize()
 ]);
 
-mMonitor.setID(assignUniqueID());
-mMonitor2.setID(assignUniqueID());
-mMonitor3.setID(assignUniqueID());
+//---Setup Scenes---
+mMonitor.setID([1, 0, 0, 1]);
+mMonitor2.setID([0, 1, 0, 1]);
+mMonitor3.setID([0, 0, 1, 1]);
 
 mMonitor.setName("<b>About Me</b>");
 mMonitor.setDescription("I spend my time creating immersive experiences within websites, programs, and games.");
@@ -345,7 +302,7 @@ mMonitor3.setDescription(`
 </ul> 
 `);
 
-//Setup Monitor Scene 1 Transformations
+//Setup Scene 1 Transformations
 mMonitor.rotate((0 * Math.PI) / 180, [0, 1, 0]);
 mMonitor2.rotate((45 * Math.PI) / 180, [0, 1, 0]);
 mMonitor3.rotate((-45 * Math.PI) / 180, [0, 1, 0]);
@@ -355,7 +312,7 @@ mMonitor.translate([0, 0, objectPositionRadius]);
 mMonitor2.translate([0, 0, objectPositionRadius]);
 mMonitor3.translate([0, 0, objectPositionRadius]);
 
-///Setup Clipboard Scene 2 Trasformations
+///Setup Scene 2 Trasformations
 mMug.setPosition([2.2, 0, 0.5]);
 mMug.rotate(MathHelper.DegToRad(-45), [0, 1, 0]);
 mPen.setPosition([1.5, 0, 1]);
@@ -390,118 +347,35 @@ async function InitEngine()
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
     const cameraFov = 60;
     const cameraRadius = 10;
-    const cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
+    let cameraView = [cameraStartingPosition, cameraStartingEye, new Float32Array([0, 1, 0])]; //position, eye, up vector
     
     //Scene 2 Camera
     const camera2Fov = 60;
-    const cameraView2 = [[0, 1.6, 3.1], [0, .35, .8], [0, 1, 0]];
+    const camera2View = [[0, 1.6, 3.1], [0, .35, .8], [0, 1, 0]];
     
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
-    var selectedObject = mMonitor;
+    let selectedObject = mMonitor;
 
-    //--------------------Monitor Animation--------------------
-    let animStepRotation = 0;
-    let animStepPosition = [0, 0, 0];
-    let animStepRadius = 0;
-    let animStartRotation = 0;
-    let animStartPosition = 0;
-    let animStartRadius = 0;
-    let animRotationFinal = 0;
-    let animPositionFinal = 0;
-    let animRadiusFinal = 0;
-    let startCameraAnim = false;
-    let isLeftMouseDown = false;
-    let animProgress = 0;
-    
-    function cameraAnimate(degree, position, radius)
-    {
-        let animDuration = 3;
-        animProgress += deltaTime / animDuration;
-        animProgress = Math.min(animProgress, 1);
-        let easedProgress = MathHelper.EaseInThenOut(animProgress);
+    //Animation
+    const cameraAnimator = new Animator();
+    let animRotationFinal;
+    let animPositionFinal;
+    let animRadiusFinal;
 
-        animStepRotation = animStartRotation + (degree - animStartRotation) * easedProgress;
-        animStepRadius = animStartRadius + (radius - animStartRadius) * easedProgress;
-        animStepPosition[0] = animStartPosition[0] + (position[0] - animStartPosition[0]) * easedProgress;
-        animStepPosition[1] = animStartPosition[1] + (position[1] - animStartPosition[1]) * easedProgress;
-        animStepPosition[2] = animStartPosition[2] + (position[2] - animStartPosition[2]) * easedProgress;
+    const clipboardAnimator = new Animator();
 
-        cameraView[0][0] = animStepRadius * Math.sin(MathHelper.DegToRad(animStepRotation));
-        cameraView[0][1] = 1.5;
-        cameraView[0][2] = animStepRadius * Math.cos(MathHelper.DegToRad(animStepRotation));
-        cameraView[1][0] = animStepPosition[0];
-        cameraView[1][1] = animStepPosition[1];
-        cameraView[1][2] = animStepPosition[2];
-
-        if (animProgress == 1) { startCameraAnim = false; }
-    }
-    //--------------------End Monitor Animation--------------------
-
-    //--------------------Clipboard Animation--------------------
-    const clipboardSlideLeftPos = [-4, 1.02, 2.05];
-    const clipboardSlideRightPos = [4, 1.02, 2.05];
     let pageCount = 0;
-    let clipboardAnimProgress = 0;
-    let startClipboardAnim = false;
-    let flipSlide = false;
-    let slideIn = false;
 
-    function clipboardAnimate(clipboardObject)
-    {
-        let startPos, endPos;
-        let pageIt = 0;
+    mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime)); //This shouldn't run all the time.
 
-        if (!slideIn && !flipSlide) //Left button clicked
-        {
-            startPos = clipboardStartingPos;
-            endPos = clipboardSlideLeftPos;
-            pageIt = -1;
-        }
-        else if (!slideIn && flipSlide)
-        {
-            startPos = clipboardSlideRightPos;
-            endPos = clipboardStartingPos;
-        }
-        else if (slideIn && !flipSlide) //Right button
-        {
-            startPos = clipboardStartingPos;
-            endPos = clipboardSlideRightPos;
-            pageIt = 1;
-        }
-        else if (slideIn && flipSlide)
-        {
-            startPos = clipboardSlideLeftPos;
-            endPos = clipboardStartingPos;
-        }
-
-        const animDuration = 2.6;
-        clipboardAnimProgress += deltaTime / animDuration;
-        clipboardAnimProgress = Math.min(clipboardAnimProgress, 1);
-        let easedProgress = MathHelper.EaseInThenOut(clipboardAnimProgress);
-
-        const animX = startPos[0] + (endPos[0] - startPos[0]) * easedProgress;
-        const animY = startPos[1] + (endPos[1] - startPos[1]) * easedProgress;
-        const animZ = startPos[2] + (endPos[2] - startPos[2]) * easedProgress;
-
-        clipboardObject.setPosition([animX, animY, animZ]);
-
-        if (clipboardAnimProgress >= 0.5 && !flipSlide)
-        {
-            flipSlide = true;
-            pageCount += pageIt;
-            updatePage();
-        }
-
-        if (clipboardAnimProgress == 1) 
-        { 
-            startClipboardAnim = false; 
-        }
-    }
+    let pageIt = 0;
+    //pageCount += pageIt;
+    //updatePage();
 
     function clipboardLeftClick()
     {
-        if (!startClipboardAnim) 
+        if (!clipboardAnimator.startClipboardAnim) 
         {
             siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
             siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
@@ -510,15 +384,12 @@ async function InitEngine()
             siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
 
-            clipboardAnimProgress = 0;
-            startClipboardAnim = true;
-            slideIn = false; //when false the clipboard slides out to the left
-            flipSlide = false;
+            clipboardAnimator.StartClipboardAnimation(false, false);
         }
     }
     function clipboardRightClick()
     {
-        if (!startClipboardAnim) 
+        if (!clipboardAnimator.startClipboardAnim) 
         {
             siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
             siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
@@ -526,11 +397,8 @@ async function InitEngine()
             siteContentHandler.clipboardRightButton.classList.add("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
             siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
-
-            clipboardAnimProgress = 0;
-            startClipboardAnim = true;
-            slideIn = true;
-            flipSlide = false;
+            
+            clipboardAnimator.StartClipboardAnimation(true, false);
         }
     }
     //--------------------End Clipboard Animation--------------------
@@ -554,9 +422,9 @@ async function InitEngine()
         
         if (id == encodedObjectID) 
         {
-            if (isLeftMouseDown && !startCameraAnim && (selectedObject !== Model || !firstClick))
+            if (isLeftMouseDown && !cameraAnimator.startCameraAnim && (selectedObject !== Model || !firstClick))
             {
-                //get y objects rotation and position
+                //Get y objects rotation and position
                 const rotationQuat = Model.getRotation();
                 const angleY = Math.atan2(2 * (rotationQuat[3] * rotationQuat[1] + rotationQuat[0] * rotationQuat[2]),
                                         1 - 2 * (rotationQuat[1] * rotationQuat[1] + rotationQuat[2] * rotationQuat[2]));
@@ -564,25 +432,18 @@ async function InitEngine()
                 animPositionFinal = Model.getPosition();
                 animRadiusFinal = cameraRadius;
                 selectedObject = Model;
+
                 pageCount = 0; //Reset page count
                 updatePage();
 
                 if (!firstClick)
                 {
-                    startCameraAnim = true;
-                    animStartRotation = 0.0;
-                    animStartPosition = [...cameraStartingEye];
-                    animStartRadius = cameraStartRadius;
-                    animProgress = 0;
+                    cameraAnimator.StartCameraAnimation(0, [...cameraStartingEye], cameraStartRadius);
                     firstClick = true;
                 }
                 else
                 {
-                    startCameraAnim = true;
-                    animStartRotation = animStepRotation;
-                    animStartPosition = animStepPosition;
-                    animStartRadius = cameraRadius;
-                    animProgress = 0;
+                    cameraAnimator.StartCameraAnimation(undefined, undefined, cameraRadius);
                 }
             }
             const selectColor = [1.4, 1.4, 1.4];
@@ -638,7 +499,7 @@ async function InitEngine()
         siteContentHandler.divMonitor.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
         siteContentHandler.divMonitor.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
-        if (startCameraAnim == false && firstClick)
+        if (cameraAnimator.startCameraAnim == false && firstClick)
         {
             const stylesheet = document.styleSheets[0];
             for (let i = stylesheet.cssRules.length - 1; i >= 0 ; i--)
@@ -800,7 +661,7 @@ async function InitEngine()
         gl.enable(gl.SCISSOR_TEST);
         gl.depthFunc(gl.LESS);
 
-        //Canvas resize
+        //Canvas Resize
         resizeCanvasToDisplaySize();
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
 
@@ -810,7 +671,7 @@ async function InitEngine()
         gl.scissor(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
 
         //Update Camera and Animate
-        if (startCameraAnim) { cameraAnimate(animRotationFinal, animPositionFinal, animRadiusFinal); }
+        if (cameraAnimator.startCameraAnim) { cameraView = cameraAnimator.CameraAnimate(deltaTime, animRotationFinal, animPositionFinal, animRadiusFinal); }
         updateCamera(cameraView, cameraFov);
         
         //--------------------Render Picking--------------------
@@ -894,7 +755,7 @@ async function InitEngine()
         gl.viewport(0, 0, gl.canvas.clientWidth, halfHeight);
         gl.scissor(0, 0, gl.canvas.clientWidth, halfHeight);
 
-        updateCamera(cameraView2, camera2Fov);
+        updateCamera(camera2View, camera2Fov);
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -909,7 +770,7 @@ async function InitEngine()
         */
 
         //Camera Uniforms
-        gl.uniform3fv(mShader.getUniformLocation("camPos"), cameraView2[0]);
+        gl.uniform3fv(mShader.getUniformLocation("camPos"), camera2View[0]);
         gl.uniformMatrix4fv(mShader.getUniformLocation("projectionMatrix"), false, projectionMatrix);
         gl.uniformMatrix4fv(mShader.getUniformLocation("viewMatrix"), false, viewMatrix);
 
@@ -1001,7 +862,7 @@ async function InitEngine()
     //--------------------End Canvas Resizing--------------------
 
     //--------------------Event Listeners--------------------
-    let touchMoved = false;
+    let isLeftMouseDown = false;
 
     gl.canvas.addEventListener("touchstart", (event) => {
         const rect = canvas.getBoundingClientRect();

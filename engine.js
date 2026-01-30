@@ -263,7 +263,7 @@ mQuad.render();
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 mBrdfShader.destroyShader()
 
-//--------------------Rendering Initialization--------------------
+//----Rendering Initialization---
 //---Init Models---
 await Promise.all([ //Run in parallel
     await mPickingShader.Initialize(),
@@ -330,12 +330,13 @@ gl.uniform1i(mShader.getUniformLocation("aoMap"), 4);
 gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
 gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
 gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
-//--------------------End Rendering Initialization--------------------
 
 let deltaTime = 0;
 async function InitEngine()
 {
     //---Variables---
+    let showMonitorDescription = false;
+
     //Scene 1 Camera
     let firstClick = false;
     const cameraStartRadius = 12;
@@ -366,12 +367,13 @@ async function InitEngine()
     siteContentHandler.InitHTMLElements();
     siteContentHandler.UpdatePage(selectedObject.getID().toString());
 
+    //---Clipboard Pages---
     function UpdatePageCallback()
     {
         siteContentHandler.UpdatePage(selectedObject.getID().toString())
     }
 
-    function ClipboardClick(isRightClick)
+    function ClipboardPageFlip(isRightClick)
     {
         if (!clipboardAnimator.startClipboardAnim) 
         {
@@ -387,10 +389,9 @@ async function InitEngine()
             clipboardAnimator.StartClipboardAnimation(isRightClick);
         }
     }
-    //--------------------End Clipboard Animation--------------------
 
-    //--------------------Object Picking--------------------
-    function getPickingID()
+    //---Object Picking---
+    function GetPickingID()
     {
         const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
         const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
@@ -401,7 +402,7 @@ async function InitEngine()
         return id;
     }
 
-    function renderObjectPicking(shader, Model, id)
+    function RenderObjectPicking(shader, Model, id)
     {
         var objectID = Model.getID();
         var encodedObjectID = objectID[0] * 255 + (objectID[1] * 255 << 8) + (objectID[2] * 255 << 16) + (objectID[3] * 255 << 24) >>> 0;
@@ -442,9 +443,9 @@ async function InitEngine()
         Model.render(shader);
         gl.uniform3fv(shader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
     }
-    //--------------------End Object Picking--------------------
+    //---Rendering Functions---
 
-    function getScreenPosFromObject(point, targetModel, useTopViewport = true)
+    function GetScreenPosFromObject(point, targetModel, useTopViewport = true)
     {
         var worldPosition = vec4.create();
         vec4.transformMat4(worldPosition, point, targetModel.getModelMatrix());
@@ -468,12 +469,10 @@ async function InitEngine()
         return [screenX, screenY];
     }
 
-    let showDescription = false;
-
-    function renderMonitorContent()
+    function RenderMonitorContent()
     {
-        let topLeft = getScreenPosFromObject([-0.7, 0.7, 1, 1], selectedObject);
-        let bottomRight = getScreenPosFromObject([0.7, -0.2, 1, 1], selectedObject);
+        let topLeft = GetScreenPosFromObject([-0.7, 0.7, 1, 1], selectedObject);
+        let bottomRight = GetScreenPosFromObject([0.7, -0.2, 1, 1], selectedObject);
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
@@ -512,7 +511,7 @@ async function InitEngine()
             siteContentHandler.divMonitorName.classList.add("anim-typewriter");
             siteContentHandler.divMonitorName.style.visibility = "visible";
 
-            if (showDescription)
+            if (showMonitorDescription)
             {
                 siteContentHandler.divMonitorDesc.classList.remove("anim-fadein");
                 siteContentHandler.divMonitorDesc.classList.add("anim-fadein");
@@ -533,17 +532,16 @@ async function InitEngine()
             siteContentHandler.divMonitorDesc.classList.remove("anim-fadein");
             siteContentHandler.iconAnglesDown.classList.remove("anim-bounce-in");
 
-            showDescription = false;
+            showMonitorDescription = false;
         }
     }
-    //--------------------Clipboard Content--------------------
 
-    function renderClipboardContent()
+    function RenderClipboardContent()
     {
-        let topLeft = getScreenPosFromObject([-.32, .32, -.15, 1], mClipBoard, false);
-        let bottomRight = getScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
-        let leftButtonPos = getScreenPosFromObject([-0.4, 0, 0, 1], mClipBoard, false);
-        let rightButtonPos = getScreenPosFromObject([0.4, 0, 0, 1], mClipBoard, false);
+        let topLeft = GetScreenPosFromObject([-.32, .32, -.15, 1], mClipBoard, false);
+        let bottomRight = GetScreenPosFromObject([.32, -.45, .28, 1], mClipBoard, false);
+        let leftButtonPos = GetScreenPosFromObject([-0.4, 0, 0, 1], mClipBoard, false);
+        let rightButtonPos = GetScreenPosFromObject([0.4, 0, 0, 1], mClipBoard, false);
 
         //Clipboard Element Positioning
         siteContentHandler.divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
@@ -557,9 +555,9 @@ async function InitEngine()
         siteContentHandler.clipboardRightButton.style.top = (Math.floor(rightButtonPos[1] - siteContentHandler.clipboardLeftButton.offsetHeight / 2)) + "px";
     }
 
-    function renderNoteContent()
+    function RenderNoteContent()
     {
-        let notePos = getScreenPosFromObject([-.1, 0, 0, 1], mNote, false);
+        let notePos = GetScreenPosFromObject([-.1, 0, 0, 1], mNote, false);
 
         siteContentHandler.divNote.innerHTML = `
         <strong>
@@ -572,9 +570,9 @@ async function InitEngine()
         siteContentHandler.divNote.style.left = Math.floor(notePos[0]) + "px"; 
         siteContentHandler.divNote.style.top = Math.floor(notePos[1]) + "px";
     }
-    //--------------------End Clipboard--------------------
 
-    function updateCamera(view, fov)
+    //---Animation Functions---
+    function UpdateCamera(view, fov)
     {
         let effectiveHeight = gl.canvas.clientHeight / 2;
         let fieldOfView = MathHelper.DegToRad(fov);
@@ -586,11 +584,28 @@ async function InitEngine()
         mat4.lookAt(viewMatrix, view[0], view[1], view[2]);
     }
 
-    let mouseX = -1;
-    let mouseY = -1;
+    function HandleAnimations()
+    {
+        //Camera Animation
+        if (cameraAnimator.startCameraAnim) { cameraView = cameraAnimator.CameraAnimate(deltaTime, animRotationFinal, animPositionFinal, animRadiusFinal); }
+        UpdateCamera(cameraView, cameraFov);
+
+        //Clipboard Animation
+        if (clipboardAnimator.startClipboardAnim)
+        {
+            mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime, UpdatePageCallback));
+        }
+        else
+        {
+            siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
+        }
+    }
+
     let prevTime = 0;
     
-    function update(time) //Called every frame and renders the scene
+    function Update(time) //Called every frame and renders the scene
     {
         time *= 0.001; //converts to seconds
         deltaTime = time - prevTime;
@@ -604,7 +619,7 @@ async function InitEngine()
         gl.depthFunc(gl.LESS);
 
         //Canvas Resize
-        resizeCanvasToDisplaySize();
+        ResizeCanvasToDisplaySize();
         setFrameBufferAttatchmentSize(gl.canvas.width, gl.canvas.height);
 
         //Scene 1 Viewport
@@ -612,11 +627,9 @@ async function InitEngine()
         gl.viewport(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
         gl.scissor(0, halfHeight, gl.canvas.clientWidth, gl.canvas.clientHeight - halfHeight);
 
-        //Update Camera and Animate
-        if (cameraAnimator.startCameraAnim) { cameraView = cameraAnimator.CameraAnimate(deltaTime, animRotationFinal, animPositionFinal, animRadiusFinal); }
-        updateCamera(cameraView, cameraFov);
+        HandleAnimations();
         
-        //--------------------Render Picking--------------------
+        //---Render Picking---
         gl.bindFramebuffer(gl.FRAMEBUFFER, mPickingBuffer);
 
         gl.clearColor(0, 0, 0, 0);
@@ -638,12 +651,11 @@ async function InitEngine()
         gl.uniform4fv(mPickingShader.getUniformLocation("id"), mMonitor3.getID()); 
         mMonitor3.render();
 
-        let pickID = getPickingID();
+        let pickID = GetPickingID();
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        //--------------------End Picking--------------------
 
-        //--------------------Render Scene 1--------------------
+        //---Render Scene 1---
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         //Render Noise Background
@@ -677,12 +689,12 @@ async function InitEngine()
 
         //Render Scene Objects
         gl.uniform3fv(mShader.getUniformLocation("colorMultiplier"), [1.0, 1.0, 1.0]);
-        renderObjectPicking(mShader, mMonitor, pickID);
-        renderObjectPicking(mShader, mMonitor2, pickID);
-        renderObjectPicking(mShader, mMonitor3, pickID);
+        RenderObjectPicking(mShader, mMonitor, pickID);
+        RenderObjectPicking(mShader, mMonitor2, pickID);
+        RenderObjectPicking(mShader, mMonitor3, pickID);
 
         //Monitor Text Rendering
-        renderMonitorContent();
+        RenderMonitorContent();
 
         //Update Model Positions
         const sinAmplitude = 0.00025;
@@ -690,14 +702,13 @@ async function InitEngine()
         mMonitor.translate([0, Math.sin(time * sinFreqency) * sinAmplitude, 0]);
         mMonitor2.translate([0, Math.sin((time + 1) * sinFreqency) * sinAmplitude, 0]);
         mMonitor3.translate([0, Math.sin((time + 2) * sinFreqency) * sinAmplitude, 0]);
-        //--------------------End Scene 1--------------------
 
-        //--------------------Render Scene 2--------------------
+        //---Render Scene 2---
         //Scene 2 Viewport
         gl.viewport(0, 0, gl.canvas.clientWidth, halfHeight);
         gl.scissor(0, 0, gl.canvas.clientWidth, halfHeight);
 
-        updateCamera(camera2View, camera2Fov);
+        UpdateCamera(camera2View, camera2Fov);
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -705,10 +716,10 @@ async function InitEngine()
         mShader.enableShader();
         /*
         //Lighting Uniforms -- Enabling will reduce efficiency
-        //gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 1.5, -.5]);
-        //gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
-        //gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
-        //gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[0]"), [0, 1.5, -.5]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[0]"), [10, 10, 10]);
+        gl.uniform3fv(mShader.getUniformLocation("lightPositions[1]"), [0, 1.5, 3]);
+        gl.uniform3fv(mShader.getUniformLocation("lightColors[1]"), [5, 5, 5]);
         */
 
         //Camera Uniforms
@@ -750,22 +761,9 @@ async function InitEngine()
         gl.uniformMatrix3fv(mShader.getUniformLocation("normalMatrix"), false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), mNote.getModelMatrix()))));
         mNote.render(mShader);
 
-        //HTML Text Rendering
-        renderClipboardContent();
-        renderNoteContent();
-
-        //Animations
-        if (clipboardAnimator.startClipboardAnim)
-        {
-            mClipBoard.setPosition(clipboardAnimator.ClipboardAnimate(deltaTime, UpdatePageCallback));
-        }
-        else
-        {
-            siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
-            siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
-            siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
-        }
-        //--------------------End Scene 2--------------------
+        //HTML Content Rendering
+        RenderClipboardContent();
+        RenderNoteContent();
 
         /* 
         //Skybox for testing purposes -- make sure to re-enable shader initialization
@@ -784,12 +782,12 @@ async function InitEngine()
         //mBrdfShader.enableShader();
         //mQuad.render();
 
-        requestAnimationFrame(update);
+        requestAnimationFrame(Update);
     }
-    requestAnimationFrame(update);
+    requestAnimationFrame(Update);
 
-    //--------------------Canvas Resizing--------------------
-    function resizeCanvasToDisplaySize() 
+    //---Canvas Resizing---
+    function ResizeCanvasToDisplaySize() 
     {
         var width = gl.canvas.clientWidth;
         var height = gl.canvas.clientHeight;
@@ -801,9 +799,10 @@ async function InitEngine()
             gl.canvas.height = height;
         }
     }
-    //--------------------End Canvas Resizing--------------------
 
-    //--------------------Event Listeners--------------------
+    //---Event Listeners---
+    let mouseX = -1;
+    let mouseY = -1;
     let isLeftMouseDown = false;
 
     gl.canvas.addEventListener("touchstart", (event) => {
@@ -836,11 +835,11 @@ async function InitEngine()
     });
 
     siteContentHandler.divMonitorName.addEventListener('animationend', (event) => {
-        showDescription = true;
+        showMonitorDescription = true;
     });
 
-    siteContentHandler.clipboardLeftButton.addEventListener("click", () => ClipboardClick(false));
-    siteContentHandler.clipboardRightButton.addEventListener("click", () => ClipboardClick(true));
+    siteContentHandler.clipboardLeftButton.addEventListener("click", () => ClipboardPageFlip(false));
+    siteContentHandler.clipboardRightButton.addEventListener("click", () => ClipboardPageFlip(true));
 
     document.addEventListener("scroll", () => {
         let currentScrollPos = window.scrollY;
@@ -853,8 +852,8 @@ async function InitEngine()
         //console.log(scrolledPercent); debug
     });
 }
-//--------------------End Event Listeners--------------------
 
+//---Main---
 try
 {
     InitEngine();

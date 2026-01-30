@@ -7,17 +7,17 @@ export default class modelLoader
         this.result = this.parseModel(text);
     }
 
-    getVertices() { return this.result[0]; }
-    getUV() { return this.result[1]; }
-    getNormals() { return this.result[2]; }
-    getIndices() { return this.result[3]; }
-    getTangents() { return this.result[4]; }
+    getVertices() { return this.result.vertices; }
+    getUV()       { return this.result.uvs; }
+    getNormals()  { return this.result.normals; }
+    getIndices()  { return this.result.indices; }
+    getTangents() { return this.result.tangents; }
 
     parseModel(data)
     {
         const lines = data.split("\n");
         
-        let aCache = {} //reusable vertices
+        const aCache = new Map(); //reusable vertices
         let cVert = [], cUV = [], cNorm = []; //Raw data
         let fVert = [], fUV = [], fNorm = [], fIndex = [], tangents = []; //Final rendering data
 
@@ -56,10 +56,11 @@ export default class modelLoader
                     for (let i = 0; i < faceParts.length; i++)
                     {
                         const vertexData = faceParts[i].split("/"); //<vertex index>/<texture_uv_index>/<normal_index>
+                        const key = faceParts[i];
 
-                        if (faceParts[i] in aCache)
+                        if (aCache.has(key))
                         {
-                            fIndex.push(aCache[faceParts[i]]);
+                            fIndex.push(aCache.get(key));
                         }
                         else
                         {
@@ -71,9 +72,8 @@ export default class modelLoader
                             fUV.push(cUV[ti], cUV[ti + 1]); //flip Y UV
                             fNorm.push(cNorm[ni], cNorm[ni + 1], cNorm[ni + 2]);
                             
-                            aCache[faceParts[i]] = fIndexCnt;
-                            fIndex.push(fIndexCnt);
-                            fIndexCnt++;
+                            aCache.set(key, fIndexCnt);
+                            fIndex.push(fIndexCnt++);
                         }
                     }
                     break;
@@ -85,7 +85,15 @@ export default class modelLoader
         tangents = this.generateTangents(fVert, fUV, fIndex);
         */
 
-        return [fVert, fUV, fNorm, fIndex, tangents];
+        return {
+            vertices: new Float32Array(fVert),
+            uvs:      new Float32Array(fUV),
+            normals:  new Float32Array(fNorm),
+            indices:  fIndexCnt > 65535
+                ? new Uint32Array(fIndex)
+                : new Uint16Array(fIndex),
+            tangents: tangents.length ? new Float32Array(tangents) : null
+        };
     }
 
     generateTangents(vPositions, vTextures, vIndices)

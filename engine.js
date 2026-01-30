@@ -1,6 +1,8 @@
 //---Dependencies---
 import Shader from "./shader.js"
 import Model from "./model.js"
+import MathHelper from "./MathHelper.js"
+import SiteContentHandler from "./SiteContentHandler.js";
 
 //---WebGL Context---
 const canvas = document.getElementById("main-canvas"); // Get canvas reference
@@ -19,36 +21,10 @@ gl.getExtension("EXT_color_buffer_float");
 
 export default gl;
 
-//--------------------HTML Integration--------------------
-//Containers
-const divContainer = document.getElementById("container");
-const divLoadingContainer = document.getElementById("loading-container");
-//Buttons
-const clipboardLeftButton = document.createElement("button");
-clipboardLeftButton.className = "left-btn";
-const clipboardRightButton = document.createElement("button");
-clipboardRightButton.className = "right-btn";
-//Icons
-const iconAnglesDown = document.createElement("i");
-iconAnglesDown.className = "fa fa-angle-double-down";
-const iconChevronLeft = document.createElement("i");
-iconChevronLeft.className = "fa fa-chevron-left";
-const iconChevronRight = document.createElement("i");
-iconChevronRight.className = "fa fa-chevron-right";
-const divPageIndicator = document.getElementById("page-indicator");
-//Content
-const divMonitor = document.createElement("div");
-divMonitor.className = "floating-div-monitor";
-const divClipboardContainer = document.createElement("div");
-const divClipboard = document.createElement("div");
-divClipboard.className = "floating-div-clipboard";
-const divNote = document.createElement("div");
-divNote.className = "floating-div-note";
-const divMonitorName = document.createElement("div");
-const divMonitorDesc = document.createElement("div");
-//--------------------End HTML--------------------
+//---HTML Integration---
+const siteContentHandler = new SiteContentHandler();
 
-//Shader Definitions
+//---Shader Definitions---
 const mShader = new Shader("Shaders/vertexPbrShaderSource.glsl", "Shaders/fragmentPbrShaderSource.glsl");
 const mPickingShader = new Shader("Shaders/vertexPickingShaderSource.glsl", "Shaders/fragmentPickingShaderSource.glsl");
 const mCubemapShader = new Shader("Shaders/vertexCubemapShaderSource.glsl", "Shaders/fragmentCubemapShaderSource.glsl");
@@ -58,7 +34,7 @@ const mBrdfShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/f
 //const mSkyboxShader = new Shader("Shaders/vertexSkyboxShaderSource.glsl", "Shaders/fragmentSkyboxShaderSource.glsl");
 const mNoiseShader = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentNoiseShaderSource.glsl");
 
-//Model Definitions
+//---Model Definitions---
 const mMonitor = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
 const mMonitor2 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
 const mMonitor3 = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
@@ -71,27 +47,6 @@ const mPlant = new Model("Models/plant.obj", "Textures/Plant/diffuse.png", "Text
 const mNote = new Model("Models/sticky note.obj", "Textures/Sticky Note/diffuse.png", "Textures/Sticky Note/normal.png", null, "Textures/Sticky Note/roughness.png", "Textures/Sticky Note/ao.png");
 const mCube = new Model("Models/cube.obj");
 const mQuad = new Model("Models/quad.obj");
-
-//--------------------Loading Information--------------------
-const loadingIcon = document.createElement("div");
-loadingIcon.className = "loading-icon";
-divLoadingContainer.append(loadingIcon);
-
-window.onload = function() 
-{
-    if (localStorage.getItem("firstVisit") === null)
-    {
-        console.log("Site has been visited for the first time, storing this visit in cache.");
-        localStorage.setItem("firstVisit", "true");
-        const divFirstVisit = document.createElement("div");
-        divFirstVisit.className = "first-visit";
-        divFirstVisit.innerHTML = `
-        Welcome to my WebGL-based Porfolio! The graphics engine is setting some things up, this won't take long!
-        `;
-        divLoadingContainer.append(divFirstVisit);
-    }
-};
-//--------------------End Loading Information--------------------
 
 //--------------------Picking Frambuffer--------------------
 const targetTexture = gl.createTexture();
@@ -169,7 +124,7 @@ gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LI
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
 //Convert HDR equirectangular environment map to cubemap
-const captureProjection = mat4.perspective(mat4.create(), degToRad(90), 1.0, 0.1, 10.0);
+const captureProjection = mat4.perspective(mat4.create(), MathHelper.DegToRad(90), 1.0, 0.1, 10.0);
 const captureViews = [
     mat4.lookAt(mat4.create(), [0, 0, 0], [1, 0, 0], [0, -1, 0]),
     mat4.lookAt(mat4.create(), [0, 0, 0], [-1, 0, 0], [0, -1, 0]),
@@ -402,11 +357,11 @@ mMonitor3.translate([0, 0, objectPositionRadius]);
 
 ///Setup Clipboard Scene 2 Trasformations
 mMug.setPosition([2.2, 0, 0.5]);
-mMug.rotate(degToRad(-45), [0, 1, 0]);
+mMug.rotate(MathHelper.DegToRad(-45), [0, 1, 0]);
 mPen.setPosition([1.5, 0, 1]);
-mPen.rotate(degToRad(10), [0, 1, 0]);
+mPen.rotate(MathHelper.DegToRad(10), [0, 1, 0]);
 mPhone.setPosition([-1.8, 0, 0.8]);
-mPhone.rotate(degToRad(45), [0, 1, 0]);
+mPhone.rotate(MathHelper.DegToRad(45), [0, 1, 0]);
 mPlant.setPosition([2, 0, -.8]);
 
 const clipboardStartingPos = [0, 1.02, 2.05];
@@ -421,39 +376,17 @@ gl.uniform1i(mShader.getUniformLocation("aoMap"), 4);
 gl.uniform1i(mShader.getUniformLocation("irradianceMap"), 5);
 gl.uniform1i(mShader.getUniformLocation("prefilterMap"), 6);
 gl.uniform1i(mShader.getUniformLocation("brdfLUT"), 7);
-
-try
-{
-    runEngine();
-}
-catch (e)
-{
-    console.log(`Uncaught JavaScript exception: ${e}`);
-}
 //--------------------End Rendering Initialization--------------------
 
 let deltaTime = 0;
-async function runEngine()
+async function InitEngine()
 {
-    divLoadingContainer.remove(); //Loading has been completed, so remove the loading information.
-
-    divContainer.append(iconAnglesDown);
-    clipboardLeftButton.append(iconChevronLeft);
-    clipboardRightButton.append(iconChevronRight);
-    divContainer.append(clipboardLeftButton);
-    divContainer.append(clipboardRightButton);
-
-    divMonitor.append(divMonitorName);
-    divMonitor.append(divMonitorDesc);
-    divContainer.append(divMonitor);
-    divClipboardContainer.append(divClipboard);
-    divClipboardContainer.append(divNote);
-    divContainer.append(divClipboardContainer);
+    siteContentHandler.InitHTMLElements();
 
     //Scene 1 Camera
     let firstClick = false;
     const cameraStartRadius = 12;
-    const cameraStartingPosition = [(cameraStartRadius) * Math.sin(degToRad(0)), 1.5, (cameraStartRadius) * Math.cos(degToRad(0))];
+    const cameraStartingPosition = [(cameraStartRadius) * Math.sin(MathHelper.DegToRad(0)), 1.5, (cameraStartRadius) * Math.cos(MathHelper.DegToRad(0))];
     const cameraStartingEye = [mMonitor.getPosition()[0], -2.0, mMonitor.getPosition()[1]];
     const cameraFov = 60;
     const cameraRadius = 10;
@@ -486,7 +419,7 @@ async function runEngine()
         let animDuration = 3;
         animProgress += deltaTime / animDuration;
         animProgress = Math.min(animProgress, 1);
-        let easedProgress = easeInOut(animProgress);
+        let easedProgress = MathHelper.EaseInThenOut(animProgress);
 
         animStepRotation = animStartRotation + (degree - animStartRotation) * easedProgress;
         animStepRadius = animStartRadius + (radius - animStartRadius) * easedProgress;
@@ -494,9 +427,9 @@ async function runEngine()
         animStepPosition[1] = animStartPosition[1] + (position[1] - animStartPosition[1]) * easedProgress;
         animStepPosition[2] = animStartPosition[2] + (position[2] - animStartPosition[2]) * easedProgress;
 
-        cameraView[0][0] = animStepRadius * Math.sin(degToRad(animStepRotation));
+        cameraView[0][0] = animStepRadius * Math.sin(MathHelper.DegToRad(animStepRotation));
         cameraView[0][1] = 1.5;
-        cameraView[0][2] = animStepRadius * Math.cos(degToRad(animStepRotation));
+        cameraView[0][2] = animStepRadius * Math.cos(MathHelper.DegToRad(animStepRotation));
         cameraView[1][0] = animStepPosition[0];
         cameraView[1][1] = animStepPosition[1];
         cameraView[1][2] = animStepPosition[2];
@@ -545,7 +478,7 @@ async function runEngine()
         const animDuration = 2.6;
         clipboardAnimProgress += deltaTime / animDuration;
         clipboardAnimProgress = Math.min(clipboardAnimProgress, 1);
-        let easedProgress = easeInOut(clipboardAnimProgress);
+        let easedProgress = MathHelper.EaseInThenOut(clipboardAnimProgress);
 
         const animX = startPos[0] + (endPos[0] - startPos[0]) * easedProgress;
         const animY = startPos[1] + (endPos[1] - startPos[1]) * easedProgress;
@@ -570,12 +503,12 @@ async function runEngine()
     {
         if (!startClipboardAnim) 
         {
-            clipboardLeftButton.classList.remove("anim-fadeout-in");
-            clipboardLeftButton.classList.add("anim-fadeout-in");
-            clipboardRightButton.classList.remove("anim-fadeout-in");
-            clipboardRightButton.classList.add("anim-fadeout-in");
-            divClipboardContainer.classList.remove("anim-fadeout-in");
-            divClipboardContainer.classList.add("anim-fadeout-in");
+            siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
+            siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardRightButton.classList.add("anim-fadeout-in");
+            siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
+            siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
 
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
@@ -587,12 +520,12 @@ async function runEngine()
     {
         if (!startClipboardAnim) 
         {
-            clipboardLeftButton.classList.remove("anim-fadeout-in");
-            clipboardLeftButton.classList.add("anim-fadeout-in");
-            clipboardRightButton.classList.remove("anim-fadeout-in");
-            clipboardRightButton.classList.add("anim-fadeout-in");
-            divClipboardContainer.classList.remove("anim-fadeout-in");
-            divClipboardContainer.classList.add("anim-fadeout-in");
+            siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardLeftButton.classList.add("anim-fadeout-in");
+            siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardRightButton.classList.add("anim-fadeout-in");
+            siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
+            siteContentHandler.divClipboardContainer.classList.add("anim-fadeout-in");
 
             clipboardAnimProgress = 0;
             startClipboardAnim = true;
@@ -627,7 +560,7 @@ async function runEngine()
                 const rotationQuat = Model.getRotation();
                 const angleY = Math.atan2(2 * (rotationQuat[3] * rotationQuat[1] + rotationQuat[0] * rotationQuat[2]),
                                         1 - 2 * (rotationQuat[1] * rotationQuat[1] + rotationQuat[2] * rotationQuat[2]));
-                animRotationFinal = Math.round(radToDeg(angleY));
+                animRotationFinal = Math.round(MathHelper.RadToDeg(angleY));
                 animPositionFinal = Model.getPosition();
                 animRadiusFinal = cameraRadius;
                 selectedObject = Model;
@@ -696,14 +629,14 @@ async function runEngine()
 
         const name = selectedObject.getName();
         const desc = selectedObject.getDescription();
-        divMonitorName.innerHTML = name;
-        divMonitorDesc.innerHTML = desc;
+        siteContentHandler.divMonitorName.innerHTML = name;
+        siteContentHandler.divMonitorDesc.innerHTML = desc;
 
         //Resize monitor text box
-        divMonitor.style.left = Math.floor(topLeft[0]) + "px";
-        divMonitor.style.top = Math.floor(topLeft[1]) + "px";
-        divMonitor.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
-        divMonitor.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
+        siteContentHandler.divMonitor.style.left = Math.floor(topLeft[0]) + "px";
+        siteContentHandler.divMonitor.style.top = Math.floor(topLeft[1]) + "px";
+        siteContentHandler.divMonitor.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
+        siteContentHandler.divMonitor.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
         if (startCameraAnim == false && firstClick)
         {
@@ -727,30 +660,30 @@ async function runEngine()
                 }
             `, stylesheet.cssRules.length);
 
-            divMonitorName.classList.remove("anim-typewriter");
-            divMonitorName.classList.add("anim-typewriter");
-            divMonitorName.style.visibility = "visible";
+            siteContentHandler.divMonitorName.classList.remove("anim-typewriter");
+            siteContentHandler.divMonitorName.classList.add("anim-typewriter");
+            siteContentHandler.divMonitorName.style.visibility = "visible";
 
             if (showDescription)
             {
-                divMonitorDesc.classList.remove("anim-fadein");
-                divMonitorDesc.classList.add("anim-fadein");
-                divMonitorDesc.style.visibility = "visible";
+                siteContentHandler.divMonitorDesc.classList.remove("anim-fadein");
+                siteContentHandler.divMonitorDesc.classList.add("anim-fadein");
+                siteContentHandler.divMonitorDesc.style.visibility = "visible";
 
-                iconAnglesDown.classList.remove("anim-bounce-in");
-                iconAnglesDown.classList.add("anim-bounce-in");
-                iconAnglesDown.style.visibility = "visible";
+                siteContentHandler.iconAnglesDown.classList.remove("anim-bounce-in");
+                siteContentHandler.iconAnglesDown.classList.add("anim-bounce-in");
+                siteContentHandler.iconAnglesDown.style.visibility = "visible";
             }
         }
         else
         {
-            iconAnglesDown.style.visibility = "hidden";
-            divMonitorName.style.visibility = "hidden";
-            divMonitorDesc.style.visibility = "hidden";
+            siteContentHandler.iconAnglesDown.style.visibility = "hidden";
+            siteContentHandler.divMonitorName.style.visibility = "hidden";
+            siteContentHandler.divMonitorDesc.style.visibility = "hidden";
 
-            divMonitorName.classList.remove("anim-typewriter");
-            divMonitorDesc.classList.remove("anim-fadein");
-            iconAnglesDown.classList.remove("anim-bounce-in");
+            siteContentHandler.divMonitorName.classList.remove("anim-typewriter");
+            siteContentHandler.divMonitorDesc.classList.remove("anim-fadein");
+            siteContentHandler.iconAnglesDown.classList.remove("anim-bounce-in");
 
             showDescription = false;
         }
@@ -770,22 +703,22 @@ async function runEngine()
     
     function updatePage()
     {
-        divPageIndicator.replaceChildren();
-        let indicators = divPageIndicator.children;
+        siteContentHandler.divPageIndicator.replaceChildren();
+        let indicators = siteContentHandler.divPageIndicator.children;
         let currentPageID = selectedObject.getID().toString();
         let pageLength = clipboardPages[currentPageID].length;
 
         pageCount = Math.max(0, Math.min(pageCount, pageLength - 1)); //clamp pages
 
-        if (pageCount == 0) { clipboardLeftButton.disabled = true; }
-        else { clipboardLeftButton.disabled = false; }
-        if (pageCount == pageLength - 1) { clipboardRightButton.disabled = true; }
-        else { clipboardRightButton.disabled = false; }
+        if (pageCount == 0) { siteContentHandler.clipboardLeftButton.disabled = true; }
+        else { siteContentHandler.clipboardLeftButton.disabled = false; }
+        if (pageCount == pageLength - 1) { siteContentHandler.clipboardRightButton.disabled = true; }
+        else { siteContentHandler.clipboardRightButton.disabled = false; }
 
         for (let i = 0; i < pageLength; i++) //Set page indicators
         {
             const indicatorBullet = document.createElement("span");
-            divPageIndicator.append(indicatorBullet);
+            siteContentHandler.divPageIndicator.append(indicatorBullet);
             indicatorBullet.innerHTML = "&#9702;";
         }
         indicators[pageCount].innerHTML = "&#8226;";
@@ -794,7 +727,7 @@ async function runEngine()
         fetch (clipboardPages[currentPageID][pageCount])
             .then (response => response.text())
             .then (htmlContent => {
-                divClipboard.innerHTML = htmlContent;
+                siteContentHandler.divClipboard.innerHTML = htmlContent;
             })
             .catch (err => {
                 console.error("Could not fetch the HTML file: ", err);
@@ -810,22 +743,22 @@ async function runEngine()
         let rightButtonPos = getScreenPosFromObject([0.4, 0, 0, 1], mClipBoard, false);
 
         //Clipboard Element Positioning
-        divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
-        divClipboard.style.top = Math.floor(topLeft[1]) + "px";
-        divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
-        divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
+        siteContentHandler.divClipboard.style.left = Math.floor(topLeft[0]) + "px"; 
+        siteContentHandler.divClipboard.style.top = Math.floor(topLeft[1]) + "px";
+        siteContentHandler.divClipboard.style.width = Math.floor(bottomRight[0] - topLeft[0]) + "px";
+        siteContentHandler.divClipboard.style.height = Math.floor(bottomRight[1] - topLeft[1]) + "px";
 
-        clipboardLeftButton.style.left = (Math.floor(leftButtonPos[0] - clipboardLeftButton.offsetWidth / 2)) + "px";
-        clipboardLeftButton.style.top = (Math.floor(leftButtonPos[1] - clipboardLeftButton.offsetHeight / 2)) + "px";
-        clipboardRightButton.style.left = (Math.floor(rightButtonPos[0] - clipboardLeftButton.offsetWidth / 2)) + "px";
-        clipboardRightButton.style.top = (Math.floor(rightButtonPos[1] - clipboardLeftButton.offsetHeight / 2)) + "px";
+        siteContentHandler.clipboardLeftButton.style.left = (Math.floor(leftButtonPos[0] - siteContentHandler.clipboardLeftButton.offsetWidth / 2)) + "px";
+        siteContentHandler.clipboardLeftButton.style.top = (Math.floor(leftButtonPos[1] - siteContentHandler.clipboardLeftButton.offsetHeight / 2)) + "px";
+        siteContentHandler.clipboardRightButton.style.left = (Math.floor(rightButtonPos[0] - siteContentHandler.clipboardLeftButton.offsetWidth / 2)) + "px";
+        siteContentHandler.clipboardRightButton.style.top = (Math.floor(rightButtonPos[1] - siteContentHandler.clipboardLeftButton.offsetHeight / 2)) + "px";
     }
 
     function renderNoteContent()
     {
         let notePos = getScreenPosFromObject([-.1, 0, 0, 1], mNote, false);
 
-        divNote.innerHTML = `
+        siteContentHandler.divNote.innerHTML = `
         <strong>
         Contact Me!
         <br>
@@ -833,15 +766,15 @@ async function runEngine()
         </strong>
         `;
 
-        divNote.style.left = Math.floor(notePos[0]) + "px"; 
-        divNote.style.top = Math.floor(notePos[1]) + "px";
+        siteContentHandler.divNote.style.left = Math.floor(notePos[0]) + "px"; 
+        siteContentHandler.divNote.style.top = Math.floor(notePos[1]) + "px";
     }
     //--------------------End Clipboard--------------------
 
     function updateCamera(view, fov)
     {
         let effectiveHeight = gl.canvas.clientHeight / 2;
-        let fieldOfView = degToRad(fov);
+        let fieldOfView = MathHelper.DegToRad(fov);
         let zNear = 0.1;
         let zFar = 100.0;
         let aspect = gl.canvas.clientWidth / effectiveHeight;
@@ -1025,9 +958,9 @@ async function runEngine()
         }
         else
         {
-            clipboardLeftButton.classList.remove("anim-fadeout-in");
-            clipboardRightButton.classList.remove("anim-fadeout-in");
-            divClipboardContainer.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardLeftButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.clipboardRightButton.classList.remove("anim-fadeout-in");
+            siteContentHandler.divClipboardContainer.classList.remove("anim-fadeout-in");
         }
         //--------------------End Scene 2--------------------
 
@@ -1099,12 +1032,12 @@ async function runEngine()
         isLeftMouseDown = false;
     });
 
-    divMonitorName.addEventListener('animationend', (event) => {
+    siteContentHandler.divMonitorName.addEventListener('animationend', (event) => {
         showDescription = true;
     });
 
-    clipboardLeftButton.addEventListener("click", clipboardLeftClick);
-    clipboardRightButton.addEventListener("click", clipboardRightClick);
+    siteContentHandler.clipboardLeftButton.addEventListener("click", clipboardLeftClick);
+    siteContentHandler.clipboardRightButton.addEventListener("click", clipboardRightClick);
 
     document.addEventListener("scroll", () => {
         let currentScrollPos = window.scrollY;
@@ -1113,30 +1046,17 @@ async function runEngine()
         const divOverlayFade = document.getElementById("overlay-fade");
         const fadeMultiplier = 1.5;
         divOverlayFade.style.backgroundColor = `rgb(19, 19, 20, ${scrolledPercent * fadeMultiplier})`;
-        iconAnglesDown.style.opacity = 1 - scrolledPercent * fadeMultiplier;
+        siteContentHandler.iconAnglesDown.style.opacity = 1 - scrolledPercent * fadeMultiplier;
         //console.log(scrolledPercent); debug
     });
 }
 //--------------------End Event Listeners--------------------
 
-//--------------------Helper Math Functions--------------------
-function easeInOut(t)
+try
 {
-    if (t <= 0.5)
-    {
-        return 2.0 * t * t;
-    }
-    t -= 0.5;
-    return 2.0 * t * (1.0 - t) + 0.5;
+    InitEngine();
 }
-
-function degToRad(degrees)
+catch (e)
 {
-    return (degrees * Math.PI) / 180.0;
+    console.log(`Uncaught JavaScript exception: ${e}`);
 }
-
-function radToDeg(rads)
-{
-    return rads * (180.0 / Math.PI);
-}
-//--------------------End Helpers--------------------

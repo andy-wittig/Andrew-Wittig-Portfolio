@@ -30,9 +30,9 @@ const mBrdfShader           = new Shader("Shaders/vertexBrdfShaderSource.glsl", 
 const mNoiseShader          = new Shader("Shaders/vertexBrdfShaderSource.glsl", "Shaders/fragmentNoiseShaderSource.glsl");
 
 //---Model Definitions---
-const mMonitor      = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mMonitor2     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
-const mMonitor3     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", "Textures/Monitor/ao.png");
+const mMonitor      = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
+const mMonitor2     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
+const mMonitor3     = new Model("Models/retro_tv.obj", "Textures/Monitor/diffuse.png", "Textures/Monitor/normal.png", "Textures/Monitor/metallic.png", "Textures/Monitor/roughness.png", null);
 const mClipBoard    = new Model("Models/clipboard.obj", "Textures/Clipboard/clipboard_diffuse.png", "Textures/Clipboard/clipboard_normal.png",
                                 "Textures/Clipboard/clipboard_metallic.png", "Textures/Clipboard/clipboard_roughness.png", "Textures/Clipboard/clipboard_ao.png");
 const mDesk         = new Model("Models/desk.obj", "Textures/Wood/wood_diffuse.png", "Textures/Wood/wood_normal.png", null, "Textures/desk_roughness.png", null);

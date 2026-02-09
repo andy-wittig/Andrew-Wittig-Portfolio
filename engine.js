@@ -296,9 +296,9 @@ mMonitor2.setDescription("Scroll down to read more about the projects I've been 
 mMonitor3.setName("<b>Skills</b>");
 mMonitor3.setDescription(`
 <ul>
-<li>C++, C#, Python</li>
-<li>Javascript, HTML, CSS</li>
+<li>C++, C#, Python, Javascript</li>
 <li>WebGL, OpenGL</li>
+<li>Unity, Visual Studios, Godot</li>
 </ul> 
 `);
 

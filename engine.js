@@ -264,22 +264,24 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 mBrdfShader.destroyShader()
 
 //----Rendering Initialization---
-//---Init Models---
-await Promise.all([ //Run in parallel
-    await mPickingShader.Initialize(),
-    await mShader.Initialize(),
+await Promise.all([
+    //Shader Init
+    mPickingShader.Initialize(),
+    mShader.Initialize(),
     //await mSkyboxShader.Initialize(), //Enable when drawing the skybox
-    await mNoiseShader.Initialize(),
-    await mMonitor.Initialize(),
-    await mMonitor2.Initialize(),
-    await mMonitor3.Initialize(),
-    await mClipBoard.Initialize(),
-    await mDesk.Initialize(),
-    await mMug.Initialize(),
-    await mPen.Initialize(),
-    await mPhone.Initialize(),
+    mNoiseShader.Initialize(),
+
+    //Model Init
+    mMonitor.Initialize(),
+    mMonitor2.Initialize(),
+    mMonitor3.Initialize(),
+    mClipBoard.Initialize(),
+    mDesk.Initialize(),
+    mMug.Initialize(),
+    mPen.Initialize(),
+    mPhone.Initialize(),
     //await mPlant.Initialize(),
-    await mNote.Initialize()
+    mNote.Initialize()
 ]);
 
 //---Setup Scenes---

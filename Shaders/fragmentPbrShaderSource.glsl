@@ -93,7 +93,8 @@ void main()
     float roughness = texture(roughnessMap, TexCoords).r;
     float ao = texture(aoMap, TexCoords).r;
 
-    vec3 N = getNormalFromMap();
+    //vec3 N = getNormalFromMap();
+    vec3 N = normalize(Normal);
     vec3 V = normalize(camPos - WorldPos);
     vec3 R = reflect(-V, N);
 
@@ -147,4 +148,5 @@ void main()
     color = pow(color, vec3(1.0 / 2.2)); //Gamma correcction
 
     FragColor = vec4(color * colorMultiplier, 1.0);
+    //FragColor = vec4(normalize(Normal) * 0.5 + 0.5, 1.0);
 }

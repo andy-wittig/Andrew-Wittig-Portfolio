@@ -45,7 +45,8 @@ export default class SiteContentHandler
         this.clipboardPages = {
         [[1, 0, 0, 1]]:["Clipboard Content/About Pages/about-page1.html", "Clipboard Content/About Pages/about-page2.html"],
         [[0, 1, 0, 1]]:["Clipboard Content/Project Pages/project-page1.html", "Clipboard Content/Project Pages/project-page2.html",
-                        "Clipboard Content/Project Pages/project-page3.html", "Clipboard Content/Project Pages/project-page4.html"],
+                        "Clipboard Content/Project Pages/project-page3.html", "Clipboard Content/Project Pages/project-page4.html",
+                        "Clipboard Content/Project Pages/project-page5.html"],
         [[0, 0, 1, 1]]:["Clipboard Content/Skill Pages/skill-page1.html"]
     };
 
